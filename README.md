@@ -1,5 +1,6 @@
    这是一个全功能的ALIDDNS脚本，支持IPV4和IPV6，具体看说明文档router/myscripts/sharealiddns/readme/readme.txt。此脚本来是放在koolshare论坛
 上免费分享给网友的，但被管理员习惯性屏蔽，考虑再三，决定还是放在这安全。
+
 使用本脚本前声明：
 1、你必须到阿里云进行域名实名认证。
 2、域名信息必须在阿里云中成功通过审核。
