@@ -1,0 +1,978 @@
+#!/bin/sh
+
+export PATH=/bin:/sbin:/lib:/usr/bin:/usr/sbin:/usr/lib:$PATH
+
+VERSION="8.0"
+ROUTER_MODEL=$(nvram get model)
+MACHINE_TYPE=$(uname -m) 
+HOSTNAME=$(uname -n)
+KERNEL_RELEASE=$(uname -r)
+OS=$(uname -o) 
+KERNEL_VER=$(expr substr `uname -r` 1 3)
+COMPUTER_NAME=$(nvram get computer_name)
+FIRMWARE=$(nvram get firmver)
+BUILDNO=$(nvram get buildno)
+WEBS_STATE_INFO=$(nvram get webs_state_info)
+PRODUCTID=$(nvram get productid)
+[ -z "$ROUTER_MODEL" ] && ROUTER_MODEL="$COMPUTER_NAME"
+
+N_COLOR="\033[0m"
+
+R_COLOR="\033[0;31;40m"
+RB_COLOR="\033[1;31;40m"
+RF_COLOR="\033[5;31;40m"
+RA_COLOR="\033[7;31;47m"
+RS_COLOR="\033[4;31;40m"
+RL_COLOR="\033[3;31;40m"
+
+G_COLOR="\033[0;32;40m"
+GB_COLOR="\033[1;32;40m"
+GF_COLOR="\033[5;32;40m"
+GA_COLOR="\033[7;32;47m"
+GS_COLOR="\033[4;32;40m"
+GL_COLOR="\033[3;32;40m"
+
+Y_COLOR="\033[0;33;40m"
+YB_COLOR="\033[1;33;40m"
+YF_COLOR="\033[5;33;40m"
+YA_COLOR="\033[7;33;47m"
+YS_COLOR="\033[4;33;40m"
+YL_COLOR="\033[3;33;40m"
+
+B_COLOR="\033[0;34;40m" 
+BB_COLOR="\033[1;34;40m"
+BF_COLOR="\033[5;34;40m"
+BA_COLOR="\033[7;34;47m"
+BS_COLOR="\033[4;34;40m"
+BL_COLOR="\033[3;34;40m"
+
+V_COLOR="\033[0;35;40m"
+VB_COLOR="\033[1;35;40m"
+VF_COLOR="\033[5;35;40m"
+VA_COLOR="\033[7;35;47m"
+VS_COLOR="\033[4;35;40m"
+VL_COLOR="\033[3;35;40m"
+
+INFO="${Y_COLOR}INFO:${N_COLOR}"
+TIPS="${YF_COLOR}TIPS:${N_COLOR}"
+ERROR="${RF_COLOR}ERROR:${N_COLOR}"
+WARNING="${YF_COLOR}WARNING:${N_COLOR}"
+INPUT="${RB_COLOR}=>${N_COLOR}"
+logsplit="================================================================================="
+logs(){
+    local v1="$1";local v2="$2";local v3="$3";local v4=""
+	case "$4" in
+		t|T|TIPS)v4="$TIPS";;
+		e|E|ERROR)v4="$ERROR";;
+		w|W|WARNING)v4="$WARNING";;
+		i|I|INFO|*)v4="$INFO";;
+	esac
+	[ -n "$v2" ] && echo -e "${v2}" 
+	if [ -n "$v1" ];then
+        case "$v3" in
+		    r|R)echo -e "${v4}${R_COLOR}${v1}${N_COLOR}";;
+			rb|RB)echo -e "${v4}${RB_COLOR}${v1}${N_COLOR}";;
+			rf|RF)echo -e "${v4}${RF_COLOR}${v1}${N_COLOR}";;
+			ra|RA)echo -e "${v4}${RA_COLOR}${v1}${N_COLOR}";;
+			rs|RS)echo -e "${v4}${RS_COLOR}${v1}${N_COLOR}";;
+			rl|RL)echo -e "${v4}${RL_COLOR}${v1}${N_COLOR}";;
+			
+			g|G)echo -e "${v4}${G_COLOR}${v1}${N_COLOR}";;	
+			gb|GB)echo -e "${v4}${GB_COLOR}${v1}${N_COLOR}";;
+			gf|GF)echo -e "${v4}${GF_COLOR}${v1}${N_COLOR}";;
+			ga|GA)echo -e "${v4}${GA_COLOR}${v1}${N_COLOR}";;
+			gs|GS)echo -e "${v4}${GS_COLOR}${v1}${N_COLOR}";;
+			gl|GL)echo -e "${v4}${GL_COLOR}${v1}${N_COLOR}";;
+			
+		    y|Y)echo -e "${v4}${Y_COLOR}${v1}${N_COLOR}";;
+			yb|YB)echo -e "${v4}${YB_COLOR}${v1}${N_COLOR}";;
+			yf|YF)echo -e "${v4}${YF_COLOR}${v1}${N_COLOR}";;
+			ya|YA)echo -e "${v4}${YA_COLOR}${v1}${N_COLOR}";;
+			ys|YS)echo -e "${v4}${YS_COLOR}${v1}${N_COLOR}";;
+			yl|YL)echo -e "${v4}${YL_COLOR}${v1}${N_COLOR}";;
+			
+			b|B)echo -e "${v4}${B_COLOR}${v1}${N_COLOR}";;
+			bA|BA)echo -e "${v4}${BB_COLOR}${v1}${N_COLOR}";;	
+			bf|BF)echo -e "${v4}${BF_COLOR}${v1}${N_COLOR}";;
+			ba|BA)echo -e "${v4}${BA_COLOR}${v1}${N_COLOR}";;
+			bs|BS)echo -e "${v4}${BS_COLOR}${v1}${N_COLOR}";;
+			bl|BL)echo -e "${v4}${BL_COLOR}${v1}${N_COLOR}";;
+			
+			v|V)echo -e "${v4}${V_COLOR}${v1}${N_COLOR}";;
+            vb|VB)echo -e "${v4}${VB_COLOR}${v1}${N_COLOR}";;
+			vf|VF)echo -e "${v4}${VF_COLOR}${v1}${N_COLOR}";;
+			va|VA)echo -e "${v4}${VA_COLOR}${v1}${N_COLOR}";;
+			vs|VS)echo -e "${v4}${VS_COLOR}${v1}${N_COLOR}";;
+			vl|VL)echo -e "${v4}${VL_COLOR}${v1}${N_COLOR}";;
+			
+			*)echo -e "${v4}${v1}";; 
+		esac
+		[ -n "$v2" ] && echo -e "${v2}" 
+	fi
+	#-------------------------------#
+    [ -n "$v2"  ] && logger "$v2"  	
+    [ -n "$v1"  ] && logger "$v1"
+    [ -n "$v2"  ] && logger "$v2" 
+    #-------------------------------#	
+	return 0
+}
+
+STRLSP(){
+    local str="$1";local n1="$2";local n2="$3"
+	if isNotEmpty "$str" check_number "$n1" && check_number "$n2";then
+		echo ${str:$n1:$n2}
+    else
+        echo ""
+    fi
+}
+
+LSP(){
+    local str1="$1";local str2="$2"
+	echo ${str1%%$str2*}
+}
+
+RSP(){
+    local str1="$1";local str2="$2"
+	echo ${str1#*$str2}
+}
+
+LTRIM(){
+    sed 's/^[ \t]*//g'
+}
+
+RTRIM(){
+    sed 's/[ \t]*$//g'
+}
+
+TRIM(){
+	LTRIM | RTRIM
+}
+
+TRIMALL(){
+    sed 's/[[:space:]]//g'
+}
+
+ROWTOCOLUMN(){
+    sed 's/ /\n/g' | sed '/^\s*$/d'
+}
+
+RMSURPLUSSPACE(){
+    sed 's/  */ /g'
+}
+
+RMSTRING(){
+    sed "s/$1//g"
+}
+
+REPLACESTRING(){
+    sed "s/$1/$2/g"
+}
+
+RMSURPLUSSPACEFILE(){
+    sed -i 's/  */ /g' "$1"
+}
+
+TRIMALLFILE(){
+    sed -i 's/[[:space:]]//g' "$1"
+}
+
+LTRIMFILE(){
+    sed -i 's/^[ \t]*//g' "$1"
+}
+
+RTRIMFILE(){
+    sed -i 's/[ \t]*$//g' "$1"
+}
+
+REPLACESTRINGFILE(){
+    sed -i "s/$1/$2/g" "$3"
+}
+
+RMSPACEROWFILE(){
+    sed -i '/^\s*$/d' "$1" 
+}
+
+urlencode() {
+    while read -n1 v;do 
+        case $v in
+            [a-zA-Z0-9.~_-]) printf "%s" "$v";;
+                          *) printf "%%%02X" "'$v";; 
+        esac
+    done
+    printf '\n'
+}
+
+domainencode() {
+    local r=1
+    while read -n1 v;do 
+        case $v in
+            [a-zA-Z0-9.-]) r=0;;
+                        *) r=1;break;; 
+        esac
+    done
+	return $r
+}
+
+do_urlencode() {
+    echo -n "$1" | urlencode
+}
+
+do_removerow(){
+    local file="$1";local n0="$2";local n1=0;local n2=0
+    if [ -f "$1" ];then
+	    RMSPACEROWFILE "$file"
+	    n1=`wc -l $file | awk '{print $1}'` >/dev/null 2>&1
+		if isgt "$n1" "$2";then 
+			n2=$(sdec $n1 $n0)
+			isgt "$n2" 1 && sed -i "1,${n2}d" "$file" >/dev/null 2>&1
+	    fi
+	fi
+}
+
+set_struppercase(){
+    local r=$(echo $1 | awk '{print toupper($0)}')
+	echo "$r"
+}
+
+set_strlowercase(){
+    local r=$(echo $1 | awk '{print tolower($0)}')
+	echo "$r"
+}
+
+set_uppercase(){
+    tr 'a-z' 'A-Z'
+}
+
+set_lowercase() {
+    tr 'A-Z' 'a-z'
+}
+
+isstarts(){
+    local s1="$1";local s2="$2"
+    echo "$s1" | grep "^$s2" >/dev/null 2>&1
+}
+
+isend() {
+    local s1="$1";local s2="$2"
+    echo "$s1" | grep -- "$s2\$" >/dev/null 2>&1
+}
+iscontains(){
+    local s1="$1";local s2="$2"
+    echo "$s1" | grep -- "$s2" >/dev/null 2>&1
+}
+
+math(){
+    local n="$@"
+    printf "%s" "$(($n))"
+}
+
+isexists() {
+    local cmd="$1";local s="$2";local r=""
+	#-------------#
+	#global variable
+	existspath=""
+	#-------------#
+    if [ -z "$cmd" ];then
+        logs "Usage: exists cmd" "" "y"
+        return 1
+    fi
+    r=$(which $cmd) 
+    if isNotEmpty "$r";then
+	    isNotEmpty "$s" && logs "$cmd exists=0" "" "y"
+		existspath="$r"
+	    return 0
+	else
+	    logs "$cmd exists=1, no found." "" "rf"
+		existspath=""
+	    return 1
+	fi
+}
+
+do_ether_wake(){ 
+	isEmpty $1 || isEmpty $2 && return 1
+    ! isexists "ether-wake"  && return 1
+	local EW="$existspath"
+	"$EW" -i $2 $1 
+    if iseq $? 0;then
+	    return 0
+    else		
+	    return 1
+	fi
+}
+
+do_ping4(){
+    local r=""
+	! isexists "ping" && return 1
+	if isEmpty "$3";then
+		r=$(ping -c $2 $1       | tr 'A-Z' 'a-z' | grep -w 'time' | awk '{print $7}' | sed "s/time=//" 2>&1)
+	else
+		r=$(ping -c $2 -w $3 $1 | tr 'A-Z' 'a-z' | grep -w 'time' | awk '{print $7}' | sed "s/time=//" 2>&1)
+	fi
+    if isNotEmpty "$r";then
+	    return 0
+	else
+	    return 1
+	fi
+}
+
+do_ping6(){
+    local r=""
+	! isexists "ping6" && return 1
+	if isEmpty "$3";then
+		r=$(ping6 -c $2 $1       | tr 'A-Z' 'a-z' | grep -w 'time' | awk '{print $7}' | sed "s/time=//" 2>&1)
+	else
+		r=$(ping6 -c $2 -w $3 $1 | tr 'A-Z' 'a-z' | grep -w 'time' | awk '{print $7}' | sed "s/time=//" 2>&1)
+	fi
+    if isNotEmpty "$r";then
+	    return 0
+	else
+	    return 1
+	fi
+}
+
+do_nslookup(){
+	local HOST="$1";local SERVER="$2";local NSLOOKUP=`which nslookup`;local R=""
+	if [ -z "$NSLOOKUP" ];then
+	    echo ""
+	else
+	    for P in $($NSLOOKUP $HOST $SERVER 2>/dev/null);do
+	        if [ -n "$P" ] && [ "${#P}" -ge 7 ] && [ "$P" != "$SERVER" ] && [ -z "$(echo $P | tr 'A-Z' 'a-z' | grep -o 'address')" ] && [ -z "$(echo $P | tr 'A-Z' 'a-z' | grep -o 'server')" ];then
+			    if [ -z "$R" ];then
+			        R="${P}"
+			    else
+			        R="${R} ${P}"
+			    fi
+		    fi
+	    done
+	    echo "$R"
+	fi
+}
+
+is_nslookup(){
+	local HOST="$1";local SERVER="$2";local NSLOOKUP=`which nslookup`
+	[ -z "$NSLOOKUP" ] && return 1
+	"$NSLOOKUP" "$HOST" "$SERVER" 2>/dev/null
+	return $?
+}
+
+go_sleep() {
+    local s="$1";local n="1";local t=0
+    if [ "$n" ];then
+        t="$s"
+        while :;do
+            printf "\r      \r"
+            echo -ne "${INPUT} ${RB_COLOR}${t} ${N_COLOR}"
+			t=$(sdec $t 1)
+			iseq "$t" 0 && break
+            sleep 1
+        done
+        printf "\r"
+    else
+        sleep "$s"
+    fi
+}
+
+do_cron(){
+    local cron_id="$1";local option="$2";local Timer="$3";local interval="$4";local cmd="$5";local action="$6";local fl="$7"
+	local iscontinue=0;local month=0;local week=0;local day=0;local min=0;local action_unlock="${action}_unlock"
+	isEmpty "$cron_id" && return 1
+	! isexists "cru" && return 1
+	if iseq "$option" "a" || iseq "$option" "d" || iseq "$option" "l";then
+	    iscontinue=1
+    else
+	    logs "option has a, d, or l, please check." "" "rf"
+        return 1  
+    fi
+	if iseq "$option" "d" || "$action" "kill" >/dev/null 2>&1 || iseq "$action" "stop" >/dev/null 2>&1;then
+	    cru d "$cron_id" >/dev/null 2>&1
+		return 0
+	fi
+	if iseq "$option" "l";then
+	    cru l
+		return 0
+	fi
+	if iseq "$option" "a" && isNotEmpty "$cmd" && isNotEmpty "$Timer";then
+	    month=$(echo "$Timer" | set_lowercase | grep -w 'month' | awk '{print $1}' | RMSTRING 'month' | RMSTRING '=' | TRIM)
+	    week=$(echo "$Timer"  | set_lowercase | grep -w 'week'  | awk '{print $2}' | RMSTRING 'week'  | RMSTRING '=' | TRIM)
+	    day=$(echo "$Timer"   | set_lowercase | grep -w 'day'   | awk '{print $3}' | RMSTRING 'day'   | RMSTRING '=' | TRIM)
+	    hour=$(echo "$Timer"  | set_lowercase | grep -w 'hour'  | awk '{print $4}' | RMSTRING 'hour'  | RMSTRING '=' | TRIM)
+	    min=$(echo "$Timer"   | set_lowercase | grep -w 'min'   | awk '{print $5}' | RMSTRING 'min'   | RMSTRING '=' | TRIM)
+	
+	    if iseq "$month" "*";then
+	        iscontinue=1	
+	    elif check_number "$month";then
+	        if isge "$month" 1 && isle "$month" 12;then
+	            iscontinue=1
+		    else
+		        logs "month has 1~12 or *, please check." "" "rf" 
+		        return 1
+		    fi
+	    else 
+	        logs "month has 1~12 or *, please check." "" "rf" 
+		    return 1
+	    fi
+	    if iseq "$week" "*";then
+	        iscontinue=1	
+	    elif check_number "$week";then
+	        if isge "$week" 0 && isle "$week" 6;then
+	            iscontinue=1
+		    else
+		        logs "week has 0~6 or *, please check." "" "rf" 
+		        return 1
+		    fi
+	    else 
+	        logs "week has 0~6 or *, please check." "" "rf" 
+		    return 1
+	    fi
+	    if iseq "$day" "*";then
+	        iscontinue=1	
+	    elif check_number "$day";then
+	        if isge "$day" 1 && isle "$day" 31;then
+	            iscontinue=1
+		    else
+		        logs "day has 1~31 or *, please check." "" "rf" 
+		        return 1
+		    fi
+	    else 
+	        logs "day has 1~31 or *, please check." "" "rf" 
+		    return 1
+	    fi
+	    if iseq "$hour" "*";then
+	        iscontinue=1	
+	    elif check_number "$hour";then
+	        if isge "$hour" 0 && isle "$hour" 24;then
+	            iscontinue=1
+		    else
+		        logs "hour has 0~24 or *, please check." "" "rf" 
+		        return 1
+		    fi
+	    else 
+	        logs "hour has 0~24 or *, please check." "" "rf" 
+		    return 1
+	    fi
+	    if iseq "$min" "*";then
+	        iscontinue=1	
+	    elif check_number "$min";then
+	        if isge "$min" 0 && isle "$min" 59;then
+	            iscontinue=1
+		    else
+		       logs "min has 0~59 or *, please check." "" "rf" 
+		       return 1
+		    fi
+	    else 
+	        logs "min has 0~59 or *, please check." "" "rf" 
+		    return 1
+	    fi
+	
+	    if iseq "$month" "*" && iseq "$week" "*" && iseq "$day" "*" && iseq "$hour" "*" && iseq "$min" "*";then
+	        logs "month week day hour min values cannot be all *, please check." "" "rf"
+	        return 1
+	    fi
+	    if iseq "$month" 0 && iseq "$week" 0 && iseq "$day" 0 && iseq "$hour" 0 && iseq "$min" 0;then
+	        logs "month week day hour min values cannot be all 0, please check." "" "rf"
+	        return 1
+	    fi
+	
+	    if iseq "$interval" "none" || iseq "$interval" "month" || iseq "$interval" "week" || iseq "$interval" "day" || iseq "$interval" "hour" || iseq "$interval" "min";then
+	        iscontinue=1
+        else
+	       logs "interval has month, week, day, hour, min, or none, please check." "" "rf"
+           return 1  
+        fi	
+		
+	    iseq "$interval" "month" && ! check_number "$month" && logs "interval must be set to none, please check." "" "rf" && return 1
+	    iseq "$interval" "week"  && ! check_number "$week"  && logs "interval must be set to none, please check." "" "rf" && return 1
+		iseq "$interval" "day"   && ! check_number "$day"   && logs "interval must be set to none, please check." "" "rf" && return 1
+		iseq "$interval" "hour"  && ! check_number "$hour"  && logs "interval must be set to none, please check." "" "rf" && return 1
+		iseq "$interval" "min"   && ! check_number "$min"   && logs "interval must be set to none, please check." "" "rf" && return 1
+		
+		iseq "$interval" "month" && check_number "$month" && month="*/$month"
+	    iseq "$interval" "week"  && check_number "$week"  && week="*/$week"
+	    iseq "$interval" "day"   && check_number "$day"   && day="*/$day"
+	    iseq "$interval" "hour"  && check_number "$hour"  && hour="*/$hour"
+	    iseq "$interval" "min"   && check_number "$min"   && min="*/$min"
+		
+		iseq "$min" "*" && min="0"
+	
+		cru d "$cron_id" >/dev/null 2>&1
+		sleep 1
+		cru a "$cron_id" "$min $hour $day $month $week /bin/sh $cmd $action_unlock" >/dev/null 2>&1
+		return 0
+	fi
+	return 0
+}
+
+del_cron(){
+    ! isexists "cru" && return 1
+	cru d "$1" >/dev/null 2>&1
+}
+
+isEmpty(){
+    if [ "$1"x = x ] || [ -z "$1" ];then
+	    return 0
+	else
+	    return 1
+	fi
+}
+
+isNotEmpty(){
+   if isEmpty "$1";then
+        return 1
+   else
+        return 0
+   fi
+}
+
+isNumber(){
+    if [ "$1" -ge 0 2>/dev/null ];then  
+        return 0 
+    else  
+        return 1  
+    fi 
+}
+
+check_number(){
+    if echo -e "$1" | grep -q '^[0-9]\+$';then 
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_alphabet(){
+    if echo -e "$1" | grep -q '^[a-zA-Z]\+$';then 
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_space(){
+    local s="$1"
+    if [ "${s/ /}" = "$s" ];then
+        return 0
+    else
+        return 1
+    fi 
+}
+
+str_total(){
+    local str=$1
+    echo ${#str}
+}
+ 
+iseq(){
+    if isNumber "$1" && isNumber "$2";then  
+        if [ "$1" -eq "$2" >/dev/null 2>&1 ];then
+		    return 0
+		else
+            return 1		
+		fi
+	else
+        if [ "$1"x = "$2"x -a "$1" == "$2" ];then
+	        return 0
+	    else
+	        return 1
+	    fi
+	fi
+}
+
+isnoteq(){
+    if iseq "$1" "$2";then
+        return 1
+    else
+        return 0
+    fi
+}
+
+isne(){
+    if iseq "$1" "$2";then
+	    return 1
+	else
+	    return 0
+	fi
+}
+
+isge(){
+    if isNumber "$1" && isNumber "$2";then  
+        if [ "$1" -ge "$2" >/dev/null 2>&1 ];then
+		    return 0	
+		fi
+	fi
+	return 1
+}
+
+isgt(){
+    if isNumber "$1" && isNumber "$2";then  
+        if [ "$1" -gt "$2" >/dev/null 2>&1 ];then
+		    return 0	
+		fi
+	fi
+	return 1
+}
+
+isle(){
+    if isNumber "$1" && isNumber "$2";then  
+        if [ "$1" -le "$2" >/dev/null 2>&1 ];then
+		    return 0	
+		fi
+	fi
+	return 1
+}
+
+islt(){
+    if isNumber "$1" && isNumber "$2";then  
+        if [ "$1" -lt "$2" >/dev/null 2>&1 ];then
+		    return 0	
+		fi
+	fi
+	return 1
+}
+
+isGEbetween(){
+    if isNumber "$1" && isNumber "$2" && isNumber "$3";then  
+	    if isge "$2" "$1" &&  isle "$2" "$3";then
+		    return 0	
+		fi
+	fi
+	return 1
+}
+
+isGTbetween(){
+    if isNumber "$1" && isNumber "$2" && isNumber "$3";then  
+	    if isgt "$2" "$1" &&  islt "$2" "$3";then
+		    return 0	
+		fi
+	fi
+	return 1
+}
+
+sadd(){
+	echo $(($1+$2))	
+}
+
+sdec(){
+	echo $(($1-$2))	
+}
+
+remainder(){
+    echo $(($1 % $2))	
+}
+
+public_ipv6_check(){
+    #fe80::
+	#fec0::
+	#0:0:0:0:0:0:0:1
+	#::1
+	echo "$1" | set_lowercase | grep -v '0:0:0:0:0:0:0:1' | grep -v '^fe80' | grep -v '^fec0' | grep -v '::1' | egrep '^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))' > /dev/null	
+}
+
+private_ipv6_check(){
+    if public_ipv6_check "$1";then
+	    return 1
+	else
+	    return 0
+	fi
+}
+
+valid_ipv6(){
+	echo "$1" | egrep '^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))' > /dev/null
+	if iseq $? 0;then   
+	    return 0
+	else
+	    return 1
+	fi	
+}
+
+public_ipv4_check(){
+    #private ip
+    #A:10.0.0.0-10.255.255.255
+    #B:172.16.0.0-172.31.255.255
+    #C:192.168.0.0-192.168.255.255
+	echo "$1" | egrep -v '[A-Za-z]' | grep '^[0-9]\{1,3\}\.\([0-9]\{1,3\}\.\)\{2\}[0-9]\{1,3\}$' | grep -v '127.0.0.1' | egrep '\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}\b' | egrep -v '(^127\.)|(^169\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)' > /dev/null
+	if iseq $? 0;then
+	    return 0
+	else
+	    return 1
+	fi
+}
+
+private_ipv4_check(){
+    #private ip
+    #A:10.0.0.0-10.255.255.255
+    #B:172.16.0.0-172.31.255.255
+    #C:192.168.0.0-192.168.255.255
+	if public_ipv4_check "$1";then
+	    return 1
+	else
+	    return 0
+	fi
+}
+
+valid_ipv4(){
+	echo "$1" | egrep '^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$' > /dev/null
+	if iseq $? 0;then    
+	    return 0
+	else
+	    return 1
+	fi	
+}
+
+valid_ip(){
+    if valid_ipv4 "$1";then
+	    return 0
+    elif valid_ipv6 "$1";then
+	    return 0 
+	else
+	    return 1
+	fi
+}
+
+valid_mac(){
+    echo "$1" | egrep '[0-9a-fA-F:]' | grep -o '[0-9a-fA-F]\{2\}\:[0-9a-fA-F]\{2\}\:[0-9a-fA-F]\{2\}\:[0-9a-fA-F]\{2\}\:[0-9a-fA-F]\{2\}\:[0-9a-fA-F]\{2\}' > /dev/null
+    if iseq $? 0;then   
+	    return 0
+	else
+	    return 1
+	fi	
+}
+
+progressbar(){
+    local nc1=0;local nc2=0;local nc3=""
+    while [ $nc1 -lt 100 >/dev/null 2>&1 ];do
+	    case $nc2 in 0) nc3='-';; 1) nc3='\';; 2) nc3='|';; 3) nc3='/';; esac
+		printf " %s\r" "$nc3" 
+        sleep 1
+		nc1=$(sadd $nc1 1)
+		nc2=$(remainder $nc1 4)
+    done
+}
+
+do_progress(){
+   local i=0;local k=0;j="="
+   ! isNumber "$1" && return 1
+   ! isEmpty "$2"  && j="$2"
+   while [ $i -lt $1 >/dev/null 2>&1 ];do
+       iseq $k 0 && echo -ne "$j"
+	   i=$(sadd $i 1)
+	   k=$(remainder $i 2)
+    done
+    echo ""
+	return 0
+}
+
+get_file_size(){
+    #[ $(get_file_size "/tmp/syslog.log") -ge 200000 ] && rm -rf "/tmp/syslog.log"
+	if [ -f "$1" ];then
+        echo `wc -c "$1" | awk '{print $1}'`
+	else
+	    echo 0
+	fi
+}
+
+get_devname(){ 
+	local r=0 
+    if [ -n "$1" ];then
+        r=$(mount | grep -w "$1" | awk '{print $1}') 
+    fi
+    echo $r
+}
+
+get_mntname(){
+    local r="" 
+    if [ -n "$1" ];then
+        r=$(mount | grep -w "$1" |  awk '{print $3}')     
+    fi
+    echo -e "$r"
+}
+
+do_backup_Directory(){
+    local i=0;local t=$(date "+%Y-%m-%d-%H-%M-%S");local d=$(basename "$2")-$t.tar.gz
+	if [ ! -d "$2" ];then
+	    logs "Not Path $2." "$logsplit" "y"
+        exit 1		
+	fi
+	
+	mkdir -p "$3" 2>/dev/null
+	
+	if [ ! -d "$3" ];then
+	    logs "Not Path $3." "$logsplit" "y"
+        exit 1		
+	fi
+	
+	logs "Backuping..."    "$logsplit" "y"
+	logs "Taring $d..."    "$logsplit" "y"
+    tar -zcf "$3/$d" "$2" 2>/dev/null
+	
+    for FILE in `ls -c "$3" 2>/dev/null`;do
+		i=$(sadd $i 1)
+	    isgt "$i" "$1" && rm -rf "$3/$FILE"    
+    done
+	if isgt "$i" 0;then  
+	    logs "Backup Finish."     "$logsplit" "y"
+        return 0 
+    else  
+	    logs "Backup Not Finish." "$logsplit" "y"
+        return 1  
+    fi 
+}
+  
+exurl(){
+	echo $(echo $1 | sed -e 's/\//\\\//g')
+}
+
+do_sed(){
+    if [ -n "$1" ];then  
+		local v1=$(exurl "$1")
+        local v2=$(exurl "$2")
+        sed -i "s/$v1/$v2/g" "$3" 
+		return 0
+    fi
+	return 1
+}
+
+check_tcp_port(){
+    local s=`iptables -vxn -L | grep -i "tcp dpt:$1" | grep -w "ACCEPT" | grep -o "$1"`
+	if isEmpty "$s";then
+	    return 1
+	else
+	    return 0
+    fi
+}
+
+check_udp_port(){
+    local s=`iptables -vxn -L | grep -i "udp dpt:$1" | grep -w "ACCEPT" | grep -o "$1"`
+	if isEmpty "$s";then
+	    return 1
+	else
+	    return 0
+    fi
+}
+
+check_tcps_port(){
+    local s=`iptables -vxn -L | grep -i "tcp dpts:$1" | grep -w "ACCEPT" | grep -o "$1"`
+	if isEmpty "$s";then
+	    return 1
+	else
+	    return 0
+    fi
+}
+
+check_udps_port(){
+    local s=`iptables -vxn -L | grep -i "udp dpts:$1" | grep -w "ACCEPT" | grep -o "$1"`
+	if isEmpty "$s";then
+	    return 1
+	else
+	    return 0
+    fi
+}
+
+createln(){
+    [ -L "$1" ] && rm -rf "$1"
+	[ -x "$2" -o -f "$2" ] && ln -sf "$2" "$1"	
+}
+
+get_basename(){
+    echo $(basename $(echo "$1" | awk -F ' ' '{print $1}') | awk -F '.' '{print $1}')
+}
+
+shellprocess(){
+    local v1=$(echo $1 | awk -F '.' '{print $1}')        > /dev/null 
+	local v2=$(basename $2 | awk -F '.' '{print $1}')    > /dev/null 
+	local v3=$(ps | grep -wn $v1 | grep -v grep | wc -l) > /dev/null 
+	#echo $(ps | grep -wn $v1 | grep -v grep)
+	#echo "$v1  $v2  $v3"
+	[ -z "$v1" ] || [ "$v3" -eq 0 ] && logs "The script is not running..." "" "vb" && return 1
+	if [ "$v1" == "$v2" ];then
+		if [ "$v3" -ge 3 ];then
+            logs "The script is running..." "" "vb" 
+			return 0
+		else
+		    logs "The script is not running..." "" "vb" 
+			return 1
+        fi	
+    else	
+        if [ "$v3" -ge 1 ];then
+            logs "The script is running..." "" "vb" 
+			return 0
+		else
+		    logs "The script is not running..." "" "vb" 
+			return 1
+        fi		
+	fi
+}
+
+_lock(){  
+    flock -$1 $2 
+}
+
+_unlocking(){ 
+    _lock u $1 
+}
+
+_locking(){
+    [ -n "$3" ] && rm -f $2 
+    eval "exec $1>\"$2\""
+	trap "_unlocking $1" EXIT 
+}
+
+xnlock(){
+	_locking $1 $2 $3
+    _lock xn $1
+}  
+
+xlock(){ 
+	_locking $1 $2 $3
+    _lock x $1 
+}
+   
+slock(){
+	_locking $1 $2 $3
+    _lock s $1
+}
+   
+ulock(){
+	_locking $1 $2 $3
+    _lock u $1
+}
+
+lock_info(){
+    logs "$1 is running or locked, exit." "" "rl" "w"
+    exit 1
+}
+
+check_url(){
+    local u="$1";local t="$2";local n="$3";local r="";local WGET=""
+	[ -z "$t" ] && t=10
+	[ -z "$n" ] && n=10
+	if isexists "wget";then
+	    WGET="$existspath"
+	else
+	    return 1
+	fi
+	r=$($WGET --no-check-certificate --spider T $t t $n $u 2>&1 | grep -o '200')
+	if isNotEmpty "$r";then
+        return 0
+	else
+	    return 1 
+    fi 
+}
+
+kill_process(){
+	killall -9 $1 2>/dev/null	
+	if [ -n "`pidof $1`" ]; then
+		logs "$1 failed." "" "rb"
+        return 255
+    else
+		logs "$1 done." "" "yb"
+        return 0
+    fi
+}
+
+do_Free_Memory(){
+    sync 
+    echo 3 > /proc/sys/vm/drop_caches
+}
+
+
+
