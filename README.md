@@ -32,7 +32,8 @@
 	 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf  
 	 或者直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。  
    大部分情况都是参数设置不正确，使得脚本运行出现错误。  
-4、至此，脚本已经安装完毕。**  
+4、至此，脚本已经安装完毕。**    
+***一行指令就完成了脚本的安装工作，是不是很简单!***
 
 ***简单运行脚本指令（更多指令参看readme.txt）启动脚本：***    
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh start***  
