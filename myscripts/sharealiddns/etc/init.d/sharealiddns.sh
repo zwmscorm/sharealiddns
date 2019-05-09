@@ -433,7 +433,7 @@ set_aliddns_conf(){
 	local s4="cron_Time";local s5="cron_Time_type";local s6="islog";local s7="aliddns_AccessKeyId"
 	local s8="aliddns_AccessKeySecret";local s9="routerddns_no";local s10="aliddns_name"
 	local s11="aliddns_domain";local s12="aliddns_ttl";local s13="aliddns_type";local s14="aliddns_lan_mac"
-    logs "1、中断所有输入操作请按ctrl+c, 跳过当前输入操作请按#, 再按回车。" "" "rb" "w"
+    logs "1、中断所有输入操作请按ctrl+c, 跳过当前输入操作请按shift+#, 再按回车。" "" "rb" "w"
 	logs "2、为避免错误，可以采用粘贴方式, 或者打开${s0}配置文件直接编辑。" "" "rb" "w"
 	logs "3、${s10}, ${s11}, ${s12}, ${s13}和${s14}列表数必须都相等, 如本示例中的列表数都是3个。" "" "RB" "w"
 	logs "4、关于${s14}：在IPV6中如想为终端设备进行域名解析, 则需要此终端设备MAC, 格式为ff:ff:ff:ff:ff:ff, 不需要为终端设备进行域名解析, 则设置为none。" "" "RB" "w"
