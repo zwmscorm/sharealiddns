@@ -23,4 +23,14 @@
 
 ## 安装方法：
 **准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell中粘贴下面指令：**      
-***cd /tmp/;wget --no-check-certificate -O /tmp/install.sh [https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh](https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh) /tmp/install.sh***
+***cd /tmp/;wget --no-check-certificate -O /tmp/install.sh [https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh](https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh) /tmp/install.sh***  
+**然后按提示进行操作：**  
+**1、将脚本安装到jffs，则输入jffs，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。   	
+2、接下来是设置aliddns.conf参数，请按上面的要求认真填写。   
+3、接下来脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。   
+	 如果aliddns.conf参数设置错误，请运行下面的脚本(假设脚本安装到jffs)，重新输入：  
+	 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf  
+	 或者直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。  
+   大部分情况都是参数设置不正确，使得脚本运行出现错误。  
+4、至此，脚本已经安装完毕。**  
+
