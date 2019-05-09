@@ -19,7 +19,7 @@
 5、不支持中文域名。  
 6、更多功能只有使用中才发现。**       
 
-## [更多说明请点击此处参看脚本文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
+## [更多说明请点击此处参看脚本说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
 ## 安装方法：
 **准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell命令行窗口中粘贴下面指令：**    
