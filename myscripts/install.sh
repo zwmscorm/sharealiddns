@@ -1,7 +1,30 @@
 #!/bin/sh
 ################################################################################
 #Note that myscripts and sharealiddns are script keywords and cannot be changed.
+#Usage method:
+#Open shell and enter:
+#cd /tmp/
+#wget --no-check-certificate -q -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
+#chmod +x install.sh
+#Installed to jffs:
+#sh install.sh jffs
+#Installed to usb:
+#sh install.sh usb
+#uninstallation:
+#sh install.sh uninstall
+################################################################################
 #注意myscripts和sharealiddns是脚本关键字，不可更改。
+#使用方法：
+#打开shell并输入：
+#cd /tmp/
+#wget --no-check-certificate -q -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
+#chmod +x install.sh
+#安装到jffs:
+#sh install.sh jffs
+#安装到usb:
+#sh install.sh usb
+#卸载:
+#sh install.sh uninstall
 ################################################################################
 logs(){
     Y_COLOR="\033[0;33;40m"
