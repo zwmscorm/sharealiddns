@@ -17,6 +17,6 @@
 4、本脚本支持IPV4和IPV6域名解析。   
 5、不支持中文域名。**     
 
-**更多说明请参看脚本文档
+更多说明请参看脚本文档[enter link description here](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/remame.txt)
 
 
