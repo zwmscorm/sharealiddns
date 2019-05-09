@@ -19,4 +19,6 @@
 
 
 
-## 更多说明请参看脚本文档[readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)
+## 更多说明请参看脚本文档[readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
+
+## 安装方法：
