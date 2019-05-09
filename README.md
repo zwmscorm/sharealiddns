@@ -22,5 +22,5 @@
 ## 更多说明请参看脚本文档[readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
 ## 安装方法：
-准备好winscp和xshell工具软件，或国产FinalShell免费版，在xshell或FinalShell中粘贴下面指令：  
+**准备好winscp和xshell工具软件，或国产FinalShell免费版，在xshell或FinalShell中粘贴下面指令：**    
 cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh /tmp/install.sh
