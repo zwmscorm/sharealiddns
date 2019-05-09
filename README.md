@@ -16,9 +16,8 @@
 2、本脚本支持N个域名解析。  
 3、主机别名支持直通符@, 通配符*或具体的别名。  
 4、本脚本支持IPV4和IPV6域名解析。   
-5、不支持中文域名。**       
-
-
+5、不支持中文域名。  
+6、更多功能只有使用中才发现。**       
 
 ## [更多说明请点击此处参看脚本文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
