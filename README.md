@@ -35,5 +35,5 @@
 4、至此，脚本已经安装完毕。**  
 
 ***简单运行脚本指令（更多指令参看readme.txt）启动脚本：***    
-        **sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh start	
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh start	
 
