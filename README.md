@@ -41,12 +41,3 @@
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh start***  
 ***或者：***  
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart***  
-
-**补充说明：  
-关于aliddns.conf参数设置中列表数必须都相等的问题，假设有3个域名，看下面的例子就会明白：  
-       aliddns_name="www       home      office"  
-     aliddns_domain="abc.com   abc.com   abc.com"  
-        aliddns_ttl="600       600       600"  
-       aliddns_type="A         A         A"  
-    aliddns_lan_mac="none      none      none"**
-
