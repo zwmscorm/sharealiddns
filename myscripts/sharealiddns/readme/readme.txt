@@ -60,7 +60,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     aliddns_domain="abc.com"
     aliddns_ttl="600"
     aliddns_type="A"
-    aliddns_lan_mac=":"
+    aliddns_lan_mac="none"
 	
 有5个域名IPV4网络的例子(注意每行总列数必须都是5列，每列之间以空格隔开，下面的例子要求相同)：
     aliddns_name="www home office router my"
