@@ -4,7 +4,7 @@
 #Usage method:
 #Open shell and enter:
 #cd /tmp/
-#wget --no-check-certificate -q -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
+#wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
 #chmod +x install.sh
 #Installed to jffs:
 #sh install.sh jffs
@@ -17,7 +17,7 @@
 #使用方法：
 #打开shell并输入：
 #cd /tmp/
-#wget --no-check-certificate -q -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
+#wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
 #chmod +x install.sh
 #安装到jffs:
 #sh install.sh jffs
