@@ -53,8 +53,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     4、aliddns_domain，为主机域名，如abc.com。
     5、aliddns_ttl，为解析有效生存时间，通常设置为600，企业用户可以设置更小值。
     6、aliddns_type，为记录类型，IPV4，必须设置为A，IPV6，必须设置为AAAA。
-    7、aliddns_lan_mac，终端设备的MAC地址，为接在路由器后端的终端设备(NAS、PC等),提供域名解析，这个功能是专门为IPV6设置的，
-	   对IPV4无效。
+    7、aliddns_lan_mac，终端设备的MAC地址，为接在路由器后端的终端设备(NAS、PC等),提供域名解析，这个功能是专门为IPV6设置的，对IPV4无效。
     8、有多个域名，aliddns_name、aliddns_domain、aliddns_ttl、aliddns_type和aliddns_lan_mac每行总列数必须都相等，每列之间以空格隔开。
 	   
 只有一个域名IPV4网络的例子：
@@ -145,7 +144,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
 	   如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到jffs)，重新设置参数：
 	   sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
        或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。
-       大部分情况都是参数设置不正确，使得脚本运行出现错误。
+	   大部分情况都是参数设置不正确，使得脚本运行出现错误。
     4、至此，脚本已经安装完毕。
 	一行指令就完成了脚本的安装工作，是不是很简单!
 ======================================================================================
