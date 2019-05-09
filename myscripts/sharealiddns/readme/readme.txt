@@ -171,13 +171,13 @@ sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh removeall
 删除aliddns.conf第3域名:
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 3
-设置aliddns.conf第3域名解析记录为禁用
+设置aliddns.conf第3域名解析记录为禁用:
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 0
-设置aliddns.conf第3域名解析记录为启用
+设置aliddns.conf第3域名解析记录为启用:
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 1
-设置aliddns.conf所有域名解析记录为启用
+设置aliddns.conf所有域名解析记录为启用:
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 1
-设置aliddns.conf所有域名解析记录为禁用
+设置aliddns.conf所有域名解析记录为禁用:
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 0
 对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
