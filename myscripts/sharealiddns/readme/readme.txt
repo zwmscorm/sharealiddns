@@ -127,7 +127,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
 	3、接下来脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。
 	   如果aliddns.conf参数设置错误，请运行下面的脚本(假设脚本安装到jffs)，重新设置参数：
 	        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
-		    或者直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。
+            或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。
             大部分情况都是参数设置不正确，使得脚本运行出现错误。
     4、至此，脚本已经安装完毕。
 	一行指令就完成了脚本的安装工作，是不是很简单!
