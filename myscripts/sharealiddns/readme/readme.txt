@@ -55,6 +55,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     6、aliddns_type，为记录类型，IPV4，必须设置为A，IPV6，必须设置为AAAA。
 	7、aliddns_lan_mac，终端设备的MAC地址，为接在路由器后端的终端设备(NAS、PC等),提供域名解析，这个功能是专门为IPV6设置的，
 	   对IPV4无效。
+	8、有多个域名，aliddns_name、aliddns_domain、aliddns_ttl、aliddns_type和aliddns_lan_mac每行总列数必须都相等，每列之间以空格隔开。
 	   
 只有一个域名IPV4网络的例子：
     aliddns_name="www"
@@ -69,13 +70,28 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     aliddns_ttl="600 600 600 600 600"
     aliddns_type="A A A A A"
     aliddns_lan_mac="none none none none none"
-
+	
+关于每行总列数必须都相等，每列之间以空格隔开，看下面的例子就会明白：
+       aliddns_name="www       home      office    router    my        nas"
+     aliddns_domain="abc.com   abc.com   abc.com   abc.com   abc.com   abc.com"
+        aliddns_ttl="600       600       600       600       600       600"
+       aliddns_type="A         A         A         A         A         A"
+    aliddns_lan_mac="none      none      none      none      none      none"	
+	6个域名列表，每行总列数必须都是6列，每列之间以空格隔开。
+	
 有多个域名IPV4网络，支持直通符@, 通配符*的例子：	
     aliddns_name="@ * www home office router my"
     aliddns_domain="abc.com abc.com abc.com abc.com abc.com abc.com abc.com"
     aliddns_ttl="600 600 600 600 600 600 600"
     aliddns_type="A A A A A A A"
     aliddns_lan_mac="none none none none none none none"
+
+只有一个域名IPV6网络的例子：
+    aliddns_name="www"
+    aliddns_domain="abc.com"
+    aliddns_ttl="600"
+    aliddns_type="AAAA"
+    aliddns_lan_mac="none"
 
 有多个域名IPV6网络，支持直通符@, 通配符*的例子：	
     aliddns_name="@ * www home office router my"
@@ -95,7 +111,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     远程访问：
 	    终端1: http://home.abc.com(有证书：https://home.abc.com)
 		终端2: http://nas.abc.com(有证书：https://nas.abc.com)
-	如果域名解析已经成功，但终端设备还是无法访问，这是因为win操作系统对IPV6支持还不完善，你需要在windows command下运行：
+	    如果域名解析已经成功，但终端设备还是无法访问，这是因为win操作系统对IPV6支持还不完善，你需要在windows command下运行：
         ipconfig/flushdns
 
 路由器同时支持IPV4和IPV6双网络的例子：	
