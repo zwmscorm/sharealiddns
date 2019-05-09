@@ -22,7 +22,7 @@
 ## [更多说明请点击此处参看脚本文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
 ## 安装方法：
-**准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell中粘贴下面指令：**      
+**准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell命令行窗口中粘贴下面指令：**      
 ***cd /tmp/;wget --no-check-certificate -O /tmp/install.sh [https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh](https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh) /tmp/install.sh***  
 **然后按提示进行操作：**  
 **1、将脚本安装到jffs，则输入jffs，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。  
