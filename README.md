@@ -19,7 +19,7 @@
 
 
 
-## [更多说明请点击此处参看脚本文档](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
+## [更多说明请点击此处参看脚本文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
 ## 安装方法：
 **准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell中粘贴下面指令：**      
