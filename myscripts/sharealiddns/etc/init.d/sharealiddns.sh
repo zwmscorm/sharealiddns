@@ -536,7 +536,7 @@ set_aliddns_conf(){
     while :;do
 	    echo -en "${INFO}${YB_COLOR}PPPOE接口-${s3}[一级路由单线为any, auto或wan0, 一级路由双线第一接口为wan0，第二接口为wan1, 二级路由为any]:${N_COLOR}"
 	    read v
-		v=$(echo "$v" | TRIMALL)
+		v=$(echo "$v" | TRIMALL | set_lowercase)
 		if echo "$v" | grep -q '^[#]\+$';then
 		    break
 		else
@@ -553,7 +553,7 @@ set_aliddns_conf(){
     while :;do
 	    echo -en "${INFO}${YB_COLOR}定时更新域名时间类型-${s5}[小时为hour, 分钟为min]:${N_COLOR}"
 	    read v
-		v=$(echo "$v" | TRIMALL)
+		v=$(echo "$v" | TRIMALL | set_lowercase)
 		if echo "$v" | grep -q '^[#]\+$';then
 		    break
 		else
@@ -597,7 +597,7 @@ set_aliddns_conf(){
 	while :;do
 	    echo -en "${INFO}${YB_COLOR}主机-${s10}[支持@和*, 多个主机以空格为分隔符, 例:@ * www]:${N_COLOR}"
 	    read v
-		v=$(echo "$v" | LTRIM | RTRIM)
+		v=$(echo "$v" | LTRIM | RTRIM | set_lowercase)
 		if echo "$v" | grep -q '^[#]\+$';then
 		    break
 		elif isEmpty "$v";then
@@ -614,7 +614,7 @@ set_aliddns_conf(){
 	while :;do
 	    echo -en "${INFO}${YB_COLOR}域名-${s11}[多个域名以空格为分隔符, 例:abc.com abc.com abc.com]:${N_COLOR}"
 	    read v
-		v=$(echo "$v" | LTRIM | RTRIM)
+		v=$(echo "$v" | LTRIM | RTRIM | set_lowercase)
 		if echo "$v" | grep -q '^[#]\+$';then
 		    break
 		elif isEmpty "$v";then
@@ -798,7 +798,11 @@ set_aliddns_conf(){
 				n=$(sadd $n 1)		
 			done
 			logs "" "$LS"
-			logs "经过验证，所有输入操作看起来是正确的, 请自行核对!" "" "rb" "w"
+			logs "经过初步验证，所有输入操作看起来是正确的, 请认真核对!" "" "rb" "w"
+			logs "10秒后, 脚本将自动运行, 请注意观察运行是否正常!" "" "rb" "w"
+			set_scripts "a"
+			go_sleep 10
+			sh "$scripts_sh" "start_unlock"
 			j=0
 	    fi	
 	else
