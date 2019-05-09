@@ -48,5 +48,5 @@
      aliddns_domain="abc.com   abc.com   abc.com"  
         aliddns_ttl="600       600       600"  
        aliddns_type="A         A         A"  
-    aliddns_lan_mac="none      none      none"
+    aliddns_lan_mac="none      none      none"**
 
