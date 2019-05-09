@@ -15,6 +15,7 @@ do_install(){
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
 	local i=1;local m="";local s="";local l=""
+	logs "going..."
 	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z `which uname` ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	#check firmware
