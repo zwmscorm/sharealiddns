@@ -43,14 +43,14 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
 ======================================================================================
 配置文件aliddns.conf中的isipv4_domain和isipv6_domain参数设置：
     isipv4_domain设置为1，执行IPV4域名解析，设置为0，不执行IPV4域名解析。
-	isipv6_domain设置为1，执行IPV6域名解析，设置为0，不执行IPV6域名解析。
+    isipv6_domain设置为1，执行IPV6域名解析，设置为0，不执行IPV6域名解析。
 ======================================================================================
 配置文件aliddns.conf域名参数设置：
 具体设置说明：
     1、aliddns_AccessKeyId和aliddns_AccessKeySecret，阿里给你的key和cret。
     2、routerddns_no，在有多个域名的情况下，用哪一个域名远程访问路由器。
     3、aliddns_name为主机别名，支持直通符@, 通配符*或具体的别名(如www, sss, yyy, m等)，不能设置为空值。
-	4、aliddns_domain，为主机域名，如abc.com。
+    4、aliddns_domain，为主机域名，如abc.com。
     5、aliddns_ttl，为解析有效生存时间，通常设置为600，企业用户可以设置更小值。
     6、aliddns_type，为记录类型，IPV4，必须设置为A，IPV6，必须设置为AAAA。
     7、aliddns_lan_mac，终端设备的MAC地址，为接在路由器后端的终端设备(NAS、PC等),提供域名解析，这个功能是专门为IPV6设置的，
@@ -109,9 +109,9 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     aliddns_lan_mac="none none none 33:D7:7A:2B:DE:6B none none none 65:D0:7B:2A:DE:4A"	
 	
     远程访问：
-	    终端1: http://home.abc.com(有证书：https://home.abc.com)
-		终端2: http://nas.abc.com(有证书：https://nas.abc.com)
-	    如果域名解析已经成功，但终端设备还是无法访问，这是因为win操作系统对IPV6支持还不完善，你需要在windows command下运行：
+        终端1: http://home.abc.com(有证书：https://home.abc.com)
+        终端2: http://nas.abc.com(有证书：https://nas.abc.com)
+        如果域名解析已经成功，但终端设备还是无法访问，这是因为win操作系统对IPV6支持还不完善，你需要在windows command下运行：
         ipconfig/flushdns
 
 路由器同时支持IPV4和IPV6双网络的例子：	
@@ -149,48 +149,48 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     4、至此，脚本已经安装完毕。
 	一行指令就完成了脚本的安装工作，是不是很简单!
 ======================================================================================
-    脚本一些功能调用(假设脚本安装到jffs)：
-	修改或设置aliddns.conf参数：
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
-    检测aliddns.conf所有域名是否成功解析：
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check
-	或
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 0
-    检测aliddns.conf第3个域名是否成功解析：
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 3
-    增加或更新aliddns.conf所有域名:
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart	
-	或 
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 0
-    增加或更新aliddns.conf第3个域名:
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 3
-    删除aliddns.conf所有域名:
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0
-	或
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh removeall
-    删除aliddns.conf第3域名:
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 3
-    设置aliddns.conf第3域名解析记录为禁用
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 0
-    设置aliddns.conf第3域名解析记录为启用
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 1
-	设置aliddns.conf所有域名解析记录为启用
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 1
-	设置aliddns.conf所有域名解析记录为禁用
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 0
-    对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
-    对aliddns.conf第3域名进行兼容性和压力测试(开发模式专用)：
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor 3
-	对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
-    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
-	检测客户端状态：
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4
-	或
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6
-	检测公网IP：
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip
-	显示日志：
-	sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh showlog
+脚本一些功能调用(假设脚本安装到jffs)：
+修改或设置aliddns.conf参数：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
+检测aliddns.conf所有域名是否成功解析：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check
+或
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 0
+检测aliddns.conf第3个域名是否成功解析：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 3
+增加或更新aliddns.conf所有域名:
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart	
+或 
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 0
+增加或更新aliddns.conf第3个域名:
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 3
+删除aliddns.conf所有域名:
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0
+或
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh removeall
+删除aliddns.conf第3域名:
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 3
+设置aliddns.conf第3域名解析记录为禁用
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 0
+设置aliddns.conf第3域名解析记录为启用
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 1
+设置aliddns.conf所有域名解析记录为启用
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 1
+设置aliddns.conf所有域名解析记录为禁用
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 0
+对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
+对aliddns.conf第3域名进行兼容性和压力测试(开发模式专用)：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor 3
+对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
+检测客户端状态：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4
+或
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6
+检测公网IP：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip
+显示日志：
+sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh showlog
 ======================================================================================
 ======================================================================================
