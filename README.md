@@ -34,5 +34,6 @@
    大部分情况都是参数设置不正确，使得脚本运行出现错误。  
 4、至此，脚本已经安装完毕。**  
 
-***两个简单运行脚本指令：***   
+***简单运行脚本指令（更多指令参看readme.txt）启动脚本：***    
+        **sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh start	
 
