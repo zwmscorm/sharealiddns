@@ -28,7 +28,7 @@ do_install(){
 	    logs "Next you need to type from the keyboard. To interrupt the operation, press ctrl+c[以下需要你从键盘输入, 如想中断操作, 请按ctrl+c]"
 	    echo -en "${INFO}${YB_COLOR}Please enter jffs, USB or uninstall[请你输入jffs, usb或uninstall]${N_COLOR}"
 	    echo -en "$YB_COLOR=>[jffs, usb, uninstall]:${N_COLOR}"
-	    while :;do
+	  
             read v
 		    v=$(echo "$v" | sed 's/[[:space:]]//g' | tr 'A-Z' 'a-z')
 		    if [ "$v" == "jffs" -o "$v" == "usb" -o "$v" == "uninstall" ];then
@@ -38,7 +38,7 @@ do_install(){
 		        echo -en "${INFO}${YB_COLOR}Please enter jffs, USB or uninstall[请你输入jffs, usb或uninstall]${N_COLOR}"
 	            echo -en "$YB_COLOR=>[jffs, usb, uninstall]:${N_COLOR}"
 		    fi
-	    done
+	   
 	fi
 	INSTALL_PATH=$(echo "$INSTALL_PATH" | sed 's/[[:space:]]//g' | tr 'A-Z' 'a-z')
 	if [ "$INSTALL_PATH" != "jffs" -a "$INSTALL_PATH" != "usb" -a "$INSTALL_PATH" != "uninstall" ];then
