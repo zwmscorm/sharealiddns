@@ -118,7 +118,6 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     aliddns_type="AAAA AAAA AAAA AAAA AAAA"
     aliddns_lan_mac="none none none none none"   
 ======================================================================================
-======================================================================================
 安装方法：
     准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell中粘贴下面指令：
 	cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh /tmp/install.sh
@@ -178,7 +177,3 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
 	    sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh showlog
 ======================================================================================
 ======================================================================================
-
-
-
-
