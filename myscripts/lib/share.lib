@@ -908,12 +908,13 @@ _lock(){
 
 _unlocking(){ 
     _lock u $1 
+	exit 0
 }
 
 _locking(){
     [ -n "$3" ] && rm -f $2 
     eval "exec $1>\"$2\""
-	trap "_unlocking $1" EXIT 
+	trap "_unlocking $1" SIGHUP SIGINT SIGQUIT SIGTERM  
 }
 
 xnlock(){
