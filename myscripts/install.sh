@@ -1,31 +1,4 @@
 #!/bin/sh
-################################################################################
-#Note that myscripts and sharealiddns are script keywords and cannot be changed.
-#Usage method:
-#Open shell and enter:
-#cd /tmp/
-#wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
-#chmod +x install.sh
-#Installed to jffs:
-#sh install.sh jffs
-#Installed to usb:
-#sh install.sh usb
-#uninstallation:
-#sh install.sh uninstall
-################################################################################
-#注意myscripts和sharealiddns是脚本关键字，不可更改。
-#使用方法：
-#打开shell并输入：
-#cd /tmp/
-#wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh
-#chmod +x install.sh
-#安装到jffs:
-#sh install.sh jffs
-#安装到usb:
-#sh install.sh usb
-#卸载:
-#sh install.sh uninstall
-################################################################################
 logs(){
     Y_COLOR="\033[0;33;40m"
     YB_COLOR="\033[1;33;40m"
@@ -44,6 +17,30 @@ do_install(){
 	local i=1;local m="";local s="";local l=""
 	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z `which uname` ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
+	#check firmware
+	if $(uname -o | tr 'A-Z' 'a-z' | grep -q 'merlin');then
+		SCRIPTS_PATH=""
+    else
+        logs "The script does not support this firmware[脚本不支持此固件]" && exit 0	
+    fi
+	#check INSTALL_PATH vlue
+	if [ -z "$INSTALL_PATH" ];then
+	    logs "Next you need to type from the keyboard. To interrupt the operation, press ctrl+c[以下需要你从键盘输入, 如想中断操作, 请按ctrl+c]"
+	    echo -en "${INFO}${YB_COLOR}Please enter jffs, USB or uninstall[请你输入jffs, usb或uninstall]${N_COLOR}"
+	    echo -en "$YB_COLOR=>[jffs, usb, uninstall]:${N_COLOR}"
+	    while :;do
+            read v
+		    v=$(echo "$v" | sed 's/[[:space:]]//g' | tr 'A-Z' 'a-z')
+		    if [ "$v" == "jffs" -o "$v" == "usb" -o "$v" == "uninstall" ];then
+		        INSTALL_PATH="$v"
+		        break
+		    else
+		        echo -en "${INFO}${YB_COLOR}Please enter jffs, USB or uninstall[请你输入jffs, usb或uninstall]${N_COLOR}"
+	            echo -en "$YB_COLOR=>[jffs, usb, uninstall]:${N_COLOR}"
+		    fi
+	    done
+	fi
+	INSTALL_PATH=$(echo "$INSTALL_PATH" | sed 's/[[:space:]]//g' | tr 'A-Z' 'a-z')
 	if [ "$INSTALL_PATH" != "jffs" -a "$INSTALL_PATH" != "usb" -a "$INSTALL_PATH" != "uninstall" ];then
 	    logs "Parameters must be jffs, usb or uninstall[参数必须是jffs、usb或uninstall]" 
 		logs "Installation to jffs example[安装到jffs示例]: sh $SH jffs"
@@ -55,28 +52,6 @@ do_install(){
     if [ "$INSTALL_PATH" == "uninstall" ];then
 	    _uninstall_ "all"
 	    exit 0
-	fi
-	#Download 	
-	if $(uname -o | tr 'A-Z' 'a-z' | grep -q 'merlin');then
-		rm -rf "$TAR_GZ"
-		rm -rf "$TMP_PATH"
-		logs "Please wait while you download it[正在下载, 请稍候]"
-	    "$WGET" --no-check-certificate -c -q -O "$TAR_GZ" "$DOWN_URL"
-		if [ $? -eq 0 -a -f "$TAR_GZ" ];then
-	        logs "Download successful[下载成功]" 
-	    else
-	        logs "Download failed. Please check that the network or wget version is too old and GitHub refuses[下载失败, 请检查网络或wget版本是否太旧, 被Github拒绝]" && exit 0
-	    fi
-    else
-        logs "The script does not support this firmware[脚本不支持此固件]" && exit 0	
-    fi
-    #TAR
-    "$TAR" -xzf "$TAR_GZ" -C "/tmp/"
-	if [ $? -ne 0 -o ! -d "$TMP_PATH/myscripts/lib" -o ! -d "$TMP_PATH/myscripts/sharealiddns" ];then
-		logs "Tar failed, Please reinstall[tar解压失败, 请重新安装]" 
-		rm -rf "$TAR_GZ"
-		rm -rf "$TMP_PATH"
-		exit 0
 	fi
 	#selecte jffs or usb
 	logs "Installing to $INSTALL_PATH[将安装到${INSTALL_PATH}]"
@@ -129,13 +104,30 @@ do_install(){
 	        fi
 	    done
 	fi
-	#Install
 	if [ -z "$SCRIPTS_PATH" ];then
-	    logs "Exit installation[已退出安装]"
+	    logs "Installation path is not determined[安装路径没确定好]"
 	    rm -rf "$TAR_GZ"
 	    rm -rf "$TMP_PATH"
 	    exit 0
 	fi
+	#Download and tar
+	logs "Please wait while you download it[正在下载, 请稍候]"
+	rm -rf "$TAR_GZ"
+    rm -rf "$TMP_PATH"
+	"$WGET" --no-check-certificate -c -q -O "$TAR_GZ" "$DOWN_URL"
+	if [ $? -eq 0 -a -f "$TAR_GZ" ];then
+	    logs "Download successful[下载成功]" 
+		"$TAR" -xzf "$TAR_GZ" -C "/tmp/"
+	    if [ $? -ne 0 -o ! -d "$TMP_PATH/myscripts/lib" -o ! -d "$TMP_PATH/myscripts/sharealiddns" ];then
+		    logs "Tar failed, Please reinstall[tar解压失败, 请重新安装]" 
+		    rm -rf "$TAR_GZ"
+		    rm -rf "$TMP_PATH"
+		    exit 0
+	    fi
+	else
+	    logs "Download failed. Please check that the network or wget version is too old and GitHub refuses[下载失败, 请检查网络或wget版本是否太旧, 被Github拒绝]" && exit 0
+	fi
+	#Install
     mkdir -p "$SCRIPTS_PATH"    
 	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup"
 	if [ "$INSTALL_PATH" == "jffs" ];then
@@ -201,7 +193,6 @@ _uninstall_(){
 	    fi
 	done
 }
-
 do_install "$1" "$0"
 
 
