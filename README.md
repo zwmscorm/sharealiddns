@@ -43,7 +43,7 @@ github社区上托管共大家下载和使用。个人看来，K&S后面的S可�
         ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check***   
 ***3、删除所有域名:***  
         ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0***  
-***4、监控域名解析：***
+***4、监控域名解析：***  
         ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor***  
 	
 
