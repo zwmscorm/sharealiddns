@@ -36,20 +36,22 @@ github社区上托管共大家下载和使用。个人看来，K&S后面的S可�
 **4、至此，脚本已经安装完毕。**    
 ***一行指令就完成了脚本的安装工作，是不是很简单!***
 
-***部分运行脚本指令(假设脚本安装到jffs):***  
-***1，增加或更新所有域名：***  
+***部分运行脚本指令(假设脚本安装到jffs):*** 
+***1、设置aliddns.conf参数***
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf***    
+***2，增加或更新所有域名：***  
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart***  
- ***2，检测所有域名是否成功解析：***   
-        ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check***   
-***3、删除所有域名:***  
-        ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0***  
-***4、监控域名解析：***  
-        ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor***  
-***5、检测公网IPV4 IP或公网IPV6 IP：***  
-       ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip***  
-***6、检测IPV4客户端状态：***  
-      ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4***  
-***6、检测IPV6客户端状态：***  
-      ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6***   
+***3，检测所有域名是否成功解析：***   
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check***   
+***4、删除所有域名:***  
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0***  
+***5、监控域名解析：***  
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor***  
+***6、检测公网IPV4 IP或公网IPV6 IP：***  
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip***  
+***7、检测IPV4客户端状态：***  
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4***  
+***8、检测IPV6客户端状态：***  
+***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6***   
 
 ***更多指令参看readme.txt***
