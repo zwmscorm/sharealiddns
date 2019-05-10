@@ -37,7 +37,7 @@ github社区上托管共大家下载和使用。个人看来，K&S后面的S可�
 ***一行指令就完成了脚本的安装工作，是不是很简单!***
 
 ***部分运行脚本指令(假设脚本安装到jffs):***   
-***1、设置aliddns.conf参数***    
+***1、设置aliddns.conf参数：***    
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf***    
 ***2，增加或更新所有域名：***  
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart***  
