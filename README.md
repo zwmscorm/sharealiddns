@@ -45,6 +45,8 @@ github社区上托管共大家下载和使用。个人看来，K&S后面的S可�
         ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0***  
 ***4、监控域名解析：***  
         ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor***  
-	
+***检测公网IP(包括IPV4和IPV6)：***
+       ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip***  
+       
 
 ***更多指令参看readme.txt***
