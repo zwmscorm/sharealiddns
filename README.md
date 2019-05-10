@@ -21,7 +21,7 @@ github社区上托管共大家下载和使用。个人看来，K&S后面的S可�
 ## [更多说明请点击此处参看脚本说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
 ## 安装方法：
-**准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell命令行窗口中粘贴下面指令：**    
+**准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell命令行窗口中粘贴下面安装指令：**    
 *--------------------------------------------------分割线下是安装指令-----------------------------------------------------------*  
 ***cd /tmp/;wget --no-check-certificate -O /tmp/install.sh [https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh](https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh) /tmp/install.sh***     
 *--------------------------------------------------分割线上是安装指令-----------------------------------------------------------*  
