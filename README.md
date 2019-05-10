@@ -39,6 +39,6 @@ github社区上托管共大家下载和使用。个人看来，K&S后面的S可�
 ***部分运行脚本指令启动脚本:***  
 ***1、增加或更新所有域名：***  
 ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart***  
- ***检测所有域名是否成功解析：***   
+ ***2，检测所有域名是否成功解析：***   
         ***sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check***  
 ***更多指令参看readme.txt***
