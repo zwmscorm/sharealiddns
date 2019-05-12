@@ -2531,6 +2531,7 @@ do_create_scripts(){
 		    if iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	 
 	            sed -i "/myshell.*/d" "$myscripts"
 		        sed -i "/myshellproc.*/d" "$myscripts"
+				sed -i "/wan_start.*/d" "$myscripts"
 				sed -i "/myup.*/d" "$myscripts"
                 sed -i '/^\s*$/d' "$myscripts"	
 			else
