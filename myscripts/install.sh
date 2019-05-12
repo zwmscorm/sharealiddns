@@ -10,14 +10,14 @@ logs(){
 	return 0
 }
 do_install(){
-    local INSTALL_PATH="$1";local SH="$2";local TAR=`which tar`;local WGET=`which wget`;local MOUNT=`which mount`
+    local INSTALL_PATH="$1";local SH="$2";local TAR=`which tar`;local WGET=`which wget`;local MOUNT=`which mount`;local BN=`which basename`
 	local DOWN_URL="https://codeload.github.com/zwmscorm/sharealiddns/tar.gz/master"
 	local TMP_PATH="/tmp/sharealiddns-master"
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
 	local i=1;local m="";local s="";local l=""
 	logs "Going..."
-	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z `which uname` ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
+	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z "$MOUNT" -o -z "$BN" ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf /tmp/install.sh;rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	
 	#os check
@@ -80,10 +80,12 @@ do_install(){
 	    SCRIPTS_PATH="$PT/myscripts" 
 	elif [ "$INSTALL_PATH" == "usb" ];then
 	    logs "Find available active partitions[查找可用的活动分区]"
-        for j in $($MOUNT | grep -w 'mnt' | cut -d ' ' -f3);do
-		    logs "$i=>$j"
-            eval m$i=$j
-		    i=$(($i+1))
+        for j in $($MOUNT | grep -v 'tmpfs' | grep -wE 'mnt|media' | cut -d ' ' -f3);do
+		    if [ -n $($BN $j) ];then
+		        logs "$i=>$j"
+                eval m$i=$j
+			    i=$(($i+1))
+			fi
         done
         if [ $i == "1" ];then
 		    logs "No active partition was found available[找不到可用的活动分区]" 
@@ -103,7 +105,7 @@ do_install(){
 	                echo -en "$YB_COLOR=>[0~$(($i-1))]:${N_COLOR}"
  	            else 
                     eval s=\$m$v
-			        l=$(echo $s | awk -F '/mnt/' '{print $2}')	
+					l=$($BN $s)
 			        if echo -e "$l" | grep -q '^[a-zA-Z0-9]\+$' && [ $(echo ${#l}) -ge 5 ];then
 	                    logs "The selected active partition is ${s}[选定的活动分区是${s}]"
 						SCRIPTS_PATH="$s/myscripts" 
