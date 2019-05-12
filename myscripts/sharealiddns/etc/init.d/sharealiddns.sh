@@ -1,29 +1,58 @@
 #!/bin/sh
 #======================================================================================
-export PATH=/usr/bin:/sbin:/usr/sbin:$PATH
+export PATH=/bin:/sbin:/lib:/usr/bin:/usr/sbin:/usr/lib:$PATH
 #======================================================================================
 get_scripts_path(){
-    echo $(dirname $(readlink -f "$1"))
+	local d=`which dirname`
+	local p=`which pwd`
+	local r=`which readlink`
+	if [ -n "$d" -a -n "$r" ];then
+	    echo $($d $($r -f $1))
+	elif [ -n "$d" -a -n "$p" ];then
+	    echo $(cd $($d $1);$p)
+	else
+	    echo ""
+	fi
 }
 #======================================================================================
 get_scripts_folder(){
-    echo `echo $1 | awk -F "/etc" '{print $1}'`
+    echo `echo $1 | awk -F "/etc/init.d" '{print $1}'`
 }
 #======================================================================================
 get_scripts_folder_name(){
-    echo $(basename $1) 
+    local b=`which basename`
+	if [ -n "$b" ];then
+        echo $($b $1) 
+	else
+	    echo ""
+	fi  
 }
 #======================================================================================
 get_scripts_mount_path(){
-    echo $(dirname $1)
+    local d=`which dirname`
+	if [ -n "$d" ];then
+        echo $($d $1)
+	else
+	    echo ""
+	fi
 }
 #======================================================================================
 get_scripts_mount_name(){
-    echo $(dirname $1)
+    local d=`which dirname`
+	if [ -n "$d" ];then
+        echo $($d $1)
+	else
+	    echo ""
+	fi
 }
 #======================================================================================
 get_scripts_name(){
-    echo $(basename $1) 
+    local b=`which basename`
+	if [ -n "$b" ];then
+        echo $($b $1)
+    else
+        echo ""
+	fi
 }
 #======================================================================================
 get_scripts_sh(){
@@ -97,6 +126,7 @@ isipv6_domain=0
 pppoe_ifname="any"
 cron_Time=1
 cron_Time_type="hour"
+cron_File=""
 #======================================================================================
 routerddns_no=1
 routerddns_name=""
@@ -110,13 +140,13 @@ u6=""
 dns=""
 #======================================================================================
 #First use wage, curl Can not be installed
-CRU=""
 MD5SUM=""
 OPENSSL=""
 NSLOOKUP="" 
 IP2="" 
 CURL="" 
-WGET="" 
+WGET=""
+SORT="" 
 #======================================================================================
 wan_no=0
 wan_ifname=""
@@ -192,6 +222,7 @@ wanstartPID=0
 externalIP4=""
 externalIP6=""
 isRUN=0
+OS_TYPE=""
 #======================================================================================
 get_url_cmd(){
     local u="$1";local m="$2";local t="$3";local n="$4";local j="$5"
@@ -833,7 +864,7 @@ get_Record(){
 	Record_RequestId="";Record_Ids="";Record_TotalCount=0;Record_Id="";Record_IP="";Record_name=""
 	Record_domain="";Record_Status="";Record_type="";Record_Locked="";Record_ttl="";num_getRecord=1  
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
 	until [ "$num_getRecord" -gt "$jk" ];do 
@@ -932,7 +963,7 @@ get_Record(){
 		fi
 	done
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"  
+        do_cron "$ID_CRU" "a" "$cron_File"  "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
     if iseq "$r" 1;then
@@ -1088,7 +1119,7 @@ aliddns_domain_api(){
 	local KI="${aliddns_AccessKeyId}"
 	local SE=$(aliddns_encode '/')
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"
+        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
 	UR="${UR}AccessKeyId=${KI}"
@@ -1099,7 +1130,7 @@ aliddns_domain_api(){
 	UR="${UR}${SP}Timestamp=$(aliddns_encode $(aliddns_domain_Timestamp))"
 	UR="${UR}${SP}Version=2015-01-09"
 	UR="${UR}${SP}$1"
-	UR=$(echo -n ${UR} | sed 's/\'"${SP}"'/\n/g' | sort | sed ':label; N; s/\n/\'"${SP}"'/g; b label')
+	UR=$(echo -n ${UR} | sed 's/\'"${SP}"'/\n/g' | $SORT | sed ':label; N; s/\n/\'"${SP}"'/g; b label')
 	
 	US="${HM}${SP}${SE}${SP}$(aliddns_encode ${UR})"
 	US=$(echo -n ${US} | $OPENSSL dgst -sha1 -hmac ${KS}${SP} -binary | $OPENSSL base64)
@@ -1808,33 +1839,40 @@ goto_remove(){
 find_wan_info(){
     local prefixes=$1;local primary="0";local prefix="";local wans_mode=$(nvram get wans_mode)
     wan_ifname="";wan_no=0;wan_proto=""
-    if iseq "$wans_mode" "lb" 2>&1;then
-	    for prefix in $prefixes;do
-		    proto=$(nvram get ${prefix}proto)
-			wan_proto="$proto"
-		    if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
-			    wan_ifname=$(nvram get ${prefix}pppoe_ifname)
-		    else
-			    wan_ifname=$(nvram get ${prefix}wan_ifname)
-		    fi
-	    done
-    else
-	    for prefix in $prefixes;do
-		    primary=$(nvram get ${prefix}primary)
-		    iseq "$primary" "1" 2>&1 && break
-	    done
-	    if iseq "$primary" "1" 2>&1;then
-	        proto=$(nvram get ${prefix}proto)
-		    wan_proto="$proto"
-	        if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
-		        wan_ifname=$(nvram get ${prefix}pppoe_ifname)
-	        else
-		        wan_ifname=$(nvram get ${prefix}wan_ifname)
-	        fi
-		fi  
-    fi
-	wan_no=$(echo $prefix | sed 's/^wan//' | sed 's/_//' 2>&1) 
-    iseq "$pppoe_ifname" "any" 2>&1 && return 0
+	if iseq "$OS_TYPE" "merlin";then
+        if iseq "$wans_mode" "lb" 2>&1;then
+	        for prefix in $prefixes;do
+		        proto=$(nvram get ${prefix}proto)
+			    wan_proto="$proto"
+		        if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
+			        wan_ifname=$(nvram get ${prefix}pppoe_ifname)
+		        else
+			        wan_ifname=$(nvram get ${prefix}wan_ifname)
+		        fi
+	        done
+        else
+	        for prefix in $prefixes;do
+		        primary=$(nvram get ${prefix}primary)
+		        iseq "$primary" "1" 2>&1 && break
+	        done
+	        if iseq "$primary" "1" 2>&1;then
+	            proto=$(nvram get ${prefix}proto)
+		        wan_proto="$proto"
+	            if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
+		            wan_ifname=$(nvram get ${prefix}pppoe_ifname)
+	            else
+		            wan_ifname=$(nvram get ${prefix}wan_ifname)
+	            fi
+		    fi  
+        fi
+		wan_no=$(echo $prefix | sed 's/^wan//' | sed 's/_//' 2>&1) 
+		iseq "$pppoe_ifname" "any" 2>&1 && return 0
+	elif iseq "$OS_TYPE" "padavan";then
+	    proto=$(nvram get wan_proto)
+	    wan_proto="$proto"
+		#wan_ifname=$(nvram get wan_ifname)
+		wan_ifname="ppp0"
+	fi
 	if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
 	    isNotEmpty "$wan_ifname" && check_number "$wan_no" && isNotEmpty "$wan_no" && isNotEmpty "$wan_proto" && return 0    
 	fi
@@ -1890,7 +1928,7 @@ get_wan_ipv46(){
 	local k="-4";local r=1;local wp="";local IP_I="";local IP_E="";local pl=""
 	iseq "$aliddns_type" "AAAA" && k="-6" && xIP="ipv6_IP" && xan_ipvx_IP="wan_$xIP"
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"  
+        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
 	#get internal Public ip
@@ -2037,7 +2075,7 @@ do_wan_ipaddr(){
 }
 #======================================================================================
 do_speed_dns(){
-    local t="";local r="";local s=",";local PING4=`which ping`;local SORT=`which sort`
+    local t="";local r="";local s=",";local PING4=`which ping`
 	if [ -z "$PING4" ];then
 	    echo "1.1.1.1"
 	else
@@ -2054,7 +2092,11 @@ do_speed_dns(){
 		if [ -z "$SORT" ];then
 		    r=$(echo $r | sed 's/,/\n/g' | awk "NR==1{print}" | awk '{print $2}')
 		else
-			r=$(echo $r | sed 's/,/\n/g' | $SORT -g -k1 -t ' ' | awk '{print $2}' | awk "NR==1{print}")
+		    if iseq "$OS_TYPE" "merlin";then
+			    r=$(echo $r | sed 's/,/\n/g' | $SORT -g -k1 -t ' ' | awk '{print $2}' | awk "NR==1{print}")
+			elif iseq "$OS_TYPE" "padavan";then
+			    r=$(echo $r | sed 's/,/\n/g' | awk "NR==1{print}" | awk '{print $2}')
+			fi
 		fi
 		if [ -n "$r" ];then
 		    echo "$r"
@@ -2068,7 +2110,7 @@ do_nslookup_check(){
 	local name="$1";local n="";local domain="$2";local SERVER="$3";local ip="";local r=1;local HOST=$(aliddns_name_real "$name" "$domain")
 	nslookup_ipvx="";isdnsExist="false"
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"   
+        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"
 		exit 0
 	fi
 	logs "$Count:[$aliddns_type]-[$name"."$domain]-public_dns[$nslookup_dns] Use nslookup check." "" "vl"	
@@ -2100,45 +2142,53 @@ set_cron(){
 		    #start|restart|update|add
 		    #Retry every 2 minutes
 			if [ "$3" == "start" -o "$3" == "restart" -o "$3" == "update" -o "$3" == "add" ];then
-                do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "again" 
+                do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "again" 
 			fi
 		else
 		    #issuccess
 		    #Retry every cron_Time
 			if iseq "$cron_Time_type" "hour";then
-		        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=$cron_Time min=0" "hour" "$scripts_sh" "update"
+		        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=$cron_Time min=0" "hour" "$scripts_sh" "update" 
 			elif iseq "$cron_Time_type" "min";then
-			    do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=$cron_Time" "min"  "$scripts_sh" "update"
+			    do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=$cron_Time" "min"  "$scripts_sh" "update" 
 			fi
 		fi
 	elif iseq "$1" "d";then	
-        do_cron "$ID_CRU" "d"			
+        do_cron "$ID_CRU" "d" "$cron_File"			
 	fi
 }
 #======================================================================================
 set_scripts(){
     #remove old scripts
-    [ -f '/jffs/scripts/nat-start' ] && isNotEmpty "$(cat '/jffs/scripts/nat-start' | grep -o 'myshell')" && do_create_scripts "d" "/jffs/scripts/nat-start" "$scripts_sh"
-	[ -f '/jffs/scripts/nat-start' ] && isNotEmpty "$(cat '/jffs/scripts/nat-start' | grep -o 'myservice')" && do_create_scripts "d" "/jffs/scripts/nat-start" "$scripts_sh"
-	[ -f '/jffs/scripts/services-start' ] && isNotEmpty "$(cat '/jffs/scripts/services-start' | grep -o 'myshell')" && do_create_scripts  "d" "/jffs/scripts/services-start" "$scripts_sh"	
-	[ -f '/jffs/scripts/services-start' ] && isNotEmpty "$(cat '/jffs/scripts/services-start' | grep -o 'myservice')" && do_create_scripts  "d" "/jffs/scripts/services-start" "$scripts_sh"	
-	[ -f '/jffs/scripts/ddns-start' ] && isNotEmpty "$(cat '/jffs/scripts/ddns-start' | grep -o 'isaliddns.success')" && do_create_scripts  "d" "/jffs/scripts/ddns-start" "$scripts_sh"
-    [ -f '/jffs/scripts/wan-start' ] && isEmpty "$(cat '/jffs/scripts/wan-start' | grep -o 'wan_start.pid')" && do_create_scripts  "d" "/jffs/scripts/wan-start" "$scripts_sh"	
+	if iseq "$OS_TYPE" "merlin";then
+        [ -f '/jffs/scripts/nat-start' ] && isNotEmpty "$(cat '/jffs/scripts/nat-start' | grep -o 'myshell')" && do_create_scripts "d" "/jffs/scripts/nat-start" "$scripts_sh"
+	    [ -f '/jffs/scripts/nat-start' ] && isNotEmpty "$(cat '/jffs/scripts/nat-start' | grep -o 'myservice')" && do_create_scripts "d" "/jffs/scripts/nat-start" "$scripts_sh"
+	    [ -f '/jffs/scripts/services-start' ] && isNotEmpty "$(cat '/jffs/scripts/services-start' | grep -o 'myshell')" && do_create_scripts  "d" "/jffs/scripts/services-start" "$scripts_sh"	
+	    [ -f '/jffs/scripts/services-start' ] && isNotEmpty "$(cat '/jffs/scripts/services-start' | grep -o 'myservice')" && do_create_scripts  "d" "/jffs/scripts/services-start" "$scripts_sh"	
+	    [ -f '/jffs/scripts/ddns-start' ] && isNotEmpty "$(cat '/jffs/scripts/ddns-start' | grep -o 'isaliddns.success')" && do_create_scripts  "d" "/jffs/scripts/ddns-start" "$scripts_sh"
+        [ -f '/jffs/scripts/wan-start' ] && isEmpty "$(cat '/jffs/scripts/wan-start' | grep -o 'wan_start.pid')" && do_create_scripts  "d" "/jffs/scripts/wan-start" "$scripts_sh"	
 	
-    if iseq "$1" "a";then
-		do_create_scripts "a" "/jffs/scripts/wan-start"  "$scripts_sh"	
-		do_create_scripts "a" "/jffs/scripts/ddns-start" "$scripts_sh"
-		do_create_scripts "a" "/jffs/scripts/post-mount" "$scripts_sh"	
-	elif iseq "$1" "d";then	
-		do_create_scripts "d" "/jffs/scripts/wan-start"  "$scripts_sh"	
-	    do_create_scripts "d" "/jffs/scripts/ddns-start" "$scripts_sh"
-        do_create_scripts "d" "/jffs/scripts/post-mount" "$scripts_sh"		
+        if iseq "$1" "a";then
+		    do_create_scripts "a" "/jffs/scripts/wan-start"  "$scripts_sh"	
+		    do_create_scripts "a" "/jffs/scripts/ddns-start" "$scripts_sh"
+		    do_create_scripts "a" "/jffs/scripts/post-mount" "$scripts_sh"	
+	    elif iseq "$1" "d";then	
+		   do_create_scripts "d" "/jffs/scripts/wan-start"  "$scripts_sh"	
+	       do_create_scripts "d" "/jffs/scripts/ddns-start" "$scripts_sh"
+           do_create_scripts "d" "/jffs/scripts/post-mount" "$scripts_sh"		
+	    fi
+	elif iseq "$OS_TYPE" "padavan";then
+	    if iseq "$1" "a";then
+		    do_create_scripts "a" "/etc/storage/post_wan_script.sh" "$scripts_sh"	
+		elif iseq "$1" "d";then	
+		    do_create_scripts "d" "/etc/storage/post_wan_script.sh" "$scripts_sh"	
+		fi	
 	fi
 }
 #======================================================================================
 do_end(){
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"
+        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
 }
@@ -2274,7 +2324,7 @@ set_success(){
 show_success(){
     local again_num=0;local m="";local msg="";local n=0;local i=1
 	if iseq "$isRUN" 1 || ! do_run_check;then
-        do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"
+        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
 	logs "" "$LS"
@@ -2417,20 +2467,6 @@ do_client(){
 	done
 }
 #======================================================================================
-service_check(){
-    local i=1;local j=30;local r=1  
-	[ "$(nvram get jffs2_enable)" != "1" ] && nvram set jffs2_enable=1
-	[ "$(nvram get jffs2_scripts)" != "1" ] && nvram set jffs2_scripts=1
-	nvram commit
-    chmod 0755 /jffs/scripts/*
-    until [ "$i" -gt "$j" ];do
-        [ "$(nvram get success_start_service)" == "1" ] && r=0 && break			
-	    sleep 1
-		i=$(sadd $i 1)	
-    done
-	return "$r"
-}
-#======================================================================================
 do_create_scripts(){
     local mymode="$1";local myscripts="$2";local myshell="$3";local myshellproc=""
     if iseq "$mymode" "a";then
@@ -2452,6 +2488,13 @@ do_create_scripts(){
 				    echo "myshell=$myshell" >> "$myscripts"
 			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
 				    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
+				elif iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	
+				    echo "if [ \$1 == 'up' ];then" >> "$myscripts"
+			        echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
+				    echo "myshell=$myshell" >> "$myscripts"
+			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
+				    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"	
+					echo 'fi' >> "$myscripts"
 				fi
 		    else
 			    myshell=$(exurl $myshell)
@@ -2474,19 +2517,35 @@ do_create_scripts(){
 			    echo "myshell=$myshell" >> "$myscripts"
 			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
 			    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
+			elif iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	
+			    echo "if [ \$1 == 'up' ];then" >> "$myscripts"
+			    echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
+				echo "myshell=$myshell" >> "$myscripts"
+			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
+				echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"	
+				echo 'fi' >> "$myscripts"
 			fi
         fi
 	    sed -i '/^\s*$/d' "$myscripts"
 	    chmod 0755 "$myscripts"
     elif iseq "$mymode" "d";then
         if [ -f "$myscripts" ];then
-	        sed -i "/myshell.*/d" "$myscripts"
-		    sed -i "/myshellproc.*/d" "$myscripts"
-			sed -i "/mymnt.*/d" "$myscripts"
-			sed -i "/myservice.*/d" "$myscripts"
-			sed -i "/wan_start.*/d" "$myscripts"
-            sed -i "/restart_dhcp6c.*/d" "$myscripts"
-            sed -i '/^\s*$/d' "$myscripts"			
+		    if iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	 
+	            sed -i "/myshell.*/d" "$myscripts"
+		        sed -i "/myshellproc.*/d" "$myscripts"
+			    sed -i "/mymnt.*/d" "$myscripts"
+			    sed -i "/myservice.*/d" "$myscripts"
+                sed -i "/restart_dhcp6c.*/d" "$myscripts"
+                sed -i '/^\s*$/d' "$myscripts"	
+			else
+			    sed -i "/myshell.*/d" "$myscripts"
+		        sed -i "/myshellproc.*/d" "$myscripts"
+			    sed -i "/mymnt.*/d" "$myscripts"
+			    sed -i "/myservice.*/d" "$myscripts"
+			    sed -i "/wan_start.*/d" "$myscripts"
+                sed -i "/restart_dhcp6c.*/d" "$myscripts"
+                sed -i '/^\s*$/d' "$myscripts"	
+            fi 			
 	    fi
     fi
 }
@@ -2506,7 +2565,12 @@ get_wan_startPID(){
 }
 #======================================================================================
 get_dhcp6cPID(){
-    local PID=$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -w 'odhcp6c' | awk '{print $1}')
+    local PID=""
+	if iseq "$OS_TYPE" "merlin";then	
+	    PID=$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -w 'odhcp6c' | awk '{print $1}')
+	elif iseq "$OS_TYPE" "padavan";then
+	    PID=$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -w 'dhcp6c'  | awk '{print $1}')
+	fi
     if isNotEmpty "$PID" && check_number "$PID";then
 	    echo "$PID"
 	else
@@ -2527,9 +2591,17 @@ get_externalIP(){
 		    logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[${u}]" "" "ys" "t"
 		    externalIP4="$wp" && r=0 && break
         else
-		    logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[${u}]" "" "rl" "w"	
-		    service restart_wan >/dev/null 2>&1
-			isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && service restart_dhcp6c >/dev/null 2>&1
+		    logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[${u}]" "" "rl" "w"
+			if iseq "$OS_TYPE" "merlin";then		
+		        service restart_wan >/dev/null 2>&1
+			elif iseq "$OS_TYPE" "padavan";then
+			    restart_wan >/dev/null 2>&1
+			fi
+			if iseq "$OS_TYPE" "merlin";then 
+			    isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && service restart_dhcp6c >/dev/null 2>&1
+			elif iseq "$OS_TYPE" "padavan";then
+			    restart_wan >/dev/null 2>&1
+			fi
 			go_sleep 15   
 			logs "Continue to detection the network..." "" "yb" "t"		
         fi		
@@ -2538,7 +2610,7 @@ get_externalIP(){
 	done
 	if isne "$r" 0;then
         logs "External IPv4 IP undetectable[检测不到外网IPV4 IP]" "" "ra" "w"
-	    do_cron "$ID_CRU" "a" "month=* week=* day=* hour=* min=$t" "min" "$scripts_sh" "update"
+	    do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=$t" "min" "$scripts_sh" 
 		return 1
 	fi
 	iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && return 0
@@ -2618,18 +2690,42 @@ do_init(){
         logs "Usage: $1 {setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client}" "" "yb" "w" >&2
         return 1
     fi
-	local ver="";local r=""
-	if $(uname -o | tr 'A-Z' 'a-z' | grep -q 'merlin');then
-	    r=""
-    else
-        logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
-		exit 0	
+	
+	#os check
+	local i=1;local j=30;local ver="";local r="";local o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
+	if [ -n "$o" ] && [ -n $(which service) ];then
+		OS_TYPE="merlin"
+    elif [ -n $(which restart_wan) ] && [ -n $(which restart_dns) ] && [ -d "/etc/storage" ];then
+		OS_TYPE="padavan"
+	else
+	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
+		OS_TYPE=""
     fi
 	
-    if [ "$2" == "setconf" ];then
+	if [ "$2" == "setconf" ];then
 	    set_aliddns_conf
         exit 0
     fi	
+	
+	#get padavan cron file
+	if iseq "$OS_TYPE" "padavan";then
+	   cron_File=$(ls /etc/storage/cron/crontabs) 
+	   if [ -n "/etc/storage/cron/crontabs/$cron_File" ];then
+	        cron_File="/etc/storage/cron/crontabs/$cron_File"
+	   fi
+	fi
+	
+	if iseq "$OS_TYPE" "merlin";then
+	    nvram set jffs2_enable=1
+	    nvram set jffs2_scripts=1
+	    nvram commit
+	    [ -d "/jffs/scripts" ] && chmod +x /jffs/scripts/*
+		until [ "$i" -gt "$j" ];do
+            [ "$(nvram get success_start_service)" == "1" ] && break			
+	        sleep 1
+		    i=$(sadd $i 1)	
+        done
+	fi
 	 
 	if isNotEmpty "$(echo $scripts_sh | grep -o 'mnt')";then
 	    r=$(echo $scripts_sh | awk -F '/mnt/' '{print $2}' | awk -F '/' '{print $1}')	
@@ -2651,14 +2747,7 @@ do_init(){
         logs "No configuration file [account.conf] can be found, exit." "" "rb" "e"
 	    return 1
     fi
-
-	if isexists "cru";then
-	    CRU="$existspath"
-	else
-	    logs "Can't find cru, exit." "" "rb" "e" 
-		return 1
-	fi
-
+	
 	if isexists "nslookup";then
 	    NSLOOKUP="$existspath"
 	else
@@ -2676,7 +2765,7 @@ do_init(){
 	
 	if isexists "openssl";then
 	    OPENSSL="$existspath"
-	    ver=`echo -e $($OPENSSL version) | awk -F' ' '{print $2}'`
+	    ver=`echo -e $($OPENSSL version) | awk -F' ' '{print $2}'` >/dev/null 2>&1
 	    logs "$OPENSSL exists=0 v$ver" "" "y" 
 	else
 	    logs "Can't find openssl, exit." "" "rb" "e" 
@@ -2685,34 +2774,43 @@ do_init(){
 
 	if isexists "ip";then
 	    IP2="$existspath"
-		ver=`echo -e $($IP2 -V) | awk -F' ' '{print $3}'`
+		ver=`echo -e $($IP2 -V) | awk -F' ' '{print $3}'` >/dev/null 2>&1
 		logs "$IP2 exists=0 $ver" "" "y" 
 	else
 	    logs "Can't find ip error." "" "rb" "e" 
 		return 1
 	fi
-
+    
     if isexists "wget";then
 	    WGET="$existspath"
-	    ver=`echo -e $($WGET -V) | awk -F' ' '{print $3}'`
+	    ver=`echo -e $($WGET -V) | awk -F' ' '{print $3}'` >/dev/null 2>&1
 	    logs "$WGET exists=0 v$ver" "" "y" 
-	    r=`echo -e $($WGET -V) | set_lowercase | grep -o 'ipv6'`
+	    r=`echo -e $($WGET -V) | set_lowercase | grep -o 'ipv6'` >/dev/null 2>&1
 	    isNotEmpty "$r" && iswget=0
-    else
-	    logs "Can't find wget, exit." "" "rb" "e" 
-		return 1
 	fi
-  
+    
 	if isexists "curl";then
 	    CURL="$existspath"
-	    ver=`echo -e $($CURL -V) | awk -F' ' '{print $2}'`
+	    ver=`echo -e $($CURL -V) | awk -F' ' '{print $2}'` >/dev/null 2>&1
         logs "$CURL exists=0 v$ver" "" "y" 
-	    r=`echo -e $($CURL -V) | set_lowercase | grep -o 'ipv6'`
+	    r=`echo -e $($CURL -V) | set_lowercase | grep -o 'ipv6'` >/dev/null 2>&1
 	    isNotEmpty "$r" && iscurl=0
-	else
-	    logs "curl is not installed, but not required." "" "y" "t"
 	fi
 	
+	#if can't wget and curl, exit 
+	if isEmpty "$WGET" && isEmpty "$CURL";then
+	    logs "Can't find wget and curl, exit." "" "rb" "e" 
+		return 1
+	fi
+	
+	if isexists "sort";then
+	    SORT="$existspath"
+		logs "$SORT exists=0" "" "y" 
+    else
+	    logs "Can't find sort, exit." "" "rb" "e" 
+		return 1
+	fi
+
 	mkdir -p "$aliddns_root/conf" 
     mkdir -p "$aliddns_root/log"  
 	
@@ -2721,11 +2819,12 @@ do_init(){
 	done    
 	
 	set_scripts "a"
+	
     return 0
 }
 #======================================================================================
 do_begin(){
-    if service_check && do_init "$1" "$2" "$3" && logs "" "$LS" && get_aliddns_options && set_ipv6_config && get_wan_info && get_externalIP;then   
+    if do_init "$1" "$2" "$3" && logs "" "$LS" && get_aliddns_options && set_ipv6_config && get_wan_info && get_externalIP;then   
 		goto_ping_wake
 		nslookup_dns=$(do_speed_dns "$dns")
 		case "$2" in

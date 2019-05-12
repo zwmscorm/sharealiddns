@@ -282,7 +282,7 @@ isexists() {
 		existspath="$r"
 	    return 0
 	else
-	    logs "$cmd exists=1, no found." "" "rf"
+	    isNotEmpty "$s" && logs "$cmd exists=1, no found." "" "rf"
 		existspath=""
 	    return 1
 	fi
@@ -373,25 +373,26 @@ go_sleep() {
 }
 
 do_cron(){
-    local cron_id="$1";local option="$2";local Timer="$3";local interval="$4";local cmd="$5";local action="$6";local fl="$7"
-	local iscontinue=0;local month=0;local week=0;local day=0;local min=0;local action_unlock="${action}_unlock"
+    local cron_id="$1";local option="$2";local cf="$3";local Timer="$4";local interval="$5";local cmd="$6";local action="$7"
+	local ct=0;local month=0;local week=0;local day=0;local min=0;local action_unlock="${action}_unlock"
+	local CRU="";local b="";local sn=""
+ 
 	isEmpty "$cron_id" && return 1
-	! isexists "cru" && return 1
 	if iseq "$option" "a" || iseq "$option" "d" || iseq "$option" "l";then
-	    iscontinue=1
+	    ct=1
     else
 	    logs "option has a, d, or l, please check." "" "rf"
         return 1  
     fi
-	if iseq "$option" "d" || "$action" "kill" >/dev/null 2>&1 || iseq "$action" "stop" >/dev/null 2>&1;then
-	    cru d "$cron_id" >/dev/null 2>&1
-		return 0
+	
+	if isexists "basename";then
+	    b="$existspath"
+		if isNotEmpty "$cmd";then
+		    sn=$($b $cmd)    
+		fi
 	fi
-	if iseq "$option" "l";then
-	    cru l
-		return 0
-	fi
-	if iseq "$option" "a" && isNotEmpty "$cmd" && isNotEmpty "$Timer";then
+	
+	if isNotEmpty "$Timer";then
 	    month=$(echo "$Timer" | set_lowercase | grep -w 'month' | awk '{print $1}' | RMSTRING 'month' | RMSTRING '=' | TRIM)
 	    week=$(echo "$Timer"  | set_lowercase | grep -w 'week'  | awk '{print $2}' | RMSTRING 'week'  | RMSTRING '=' | TRIM)
 	    day=$(echo "$Timer"   | set_lowercase | grep -w 'day'   | awk '{print $3}' | RMSTRING 'day'   | RMSTRING '=' | TRIM)
@@ -399,10 +400,10 @@ do_cron(){
 	    min=$(echo "$Timer"   | set_lowercase | grep -w 'min'   | awk '{print $5}' | RMSTRING 'min'   | RMSTRING '=' | TRIM)
 	
 	    if iseq "$month" "*";then
-	        iscontinue=1	
+	        ct=1	
 	    elif check_number "$month";then
 	        if isge "$month" 1 && isle "$month" 12;then
-	            iscontinue=1
+	            ct=1
 		    else
 		        logs "month has 1~12 or *, please check." "" "rf" 
 		        return 1
@@ -412,10 +413,10 @@ do_cron(){
 		    return 1
 	    fi
 	    if iseq "$week" "*";then
-	        iscontinue=1	
+	        ct=1	
 	    elif check_number "$week";then
 	        if isge "$week" 0 && isle "$week" 6;then
-	            iscontinue=1
+	            ct=1
 		    else
 		        logs "week has 0~6 or *, please check." "" "rf" 
 		        return 1
@@ -425,10 +426,10 @@ do_cron(){
 		    return 1
 	    fi
 	    if iseq "$day" "*";then
-	        iscontinue=1	
+	        ct=1	
 	    elif check_number "$day";then
 	        if isge "$day" 1 && isle "$day" 31;then
-	            iscontinue=1
+	            ct=1
 		    else
 		        logs "day has 1~31 or *, please check." "" "rf" 
 		        return 1
@@ -438,10 +439,10 @@ do_cron(){
 		    return 1
 	    fi
 	    if iseq "$hour" "*";then
-	        iscontinue=1	
+	        ct=1	
 	    elif check_number "$hour";then
 	        if isge "$hour" 0 && isle "$hour" 24;then
-	            iscontinue=1
+	            ct=1
 		    else
 		        logs "hour has 0~24 or *, please check." "" "rf" 
 		        return 1
@@ -451,10 +452,10 @@ do_cron(){
 		    return 1
 	    fi
 	    if iseq "$min" "*";then
-	        iscontinue=1	
+	        ct=1	
 	    elif check_number "$min";then
 	        if isge "$min" 0 && isle "$min" 59;then
-	            iscontinue=1
+	            ct=1
 		    else
 		       logs "min has 0~59 or *, please check." "" "rf" 
 		       return 1
@@ -474,7 +475,7 @@ do_cron(){
 	    fi
 	
 	    if iseq "$interval" "none" || iseq "$interval" "month" || iseq "$interval" "week" || iseq "$interval" "day" || iseq "$interval" "hour" || iseq "$interval" "min";then
-	        iscontinue=1
+	        ct=1
         else
 	       logs "interval has month, week, day, hour, min, or none, please check." "" "rf"
            return 1  
@@ -493,18 +494,58 @@ do_cron(){
 	    iseq "$interval" "min"   && check_number "$min"   && min="*/$min"
 		
 		iseq "$min" "*" && min="0"
-	
-		cru d "$cron_id" >/dev/null 2>&1
-		sleep 1
-		cru a "$cron_id" "$min $hour $day $month $week /bin/sh $cmd $action_unlock" >/dev/null 2>&1
-		return 0
+	fi
+
+	if isexists "cru" >/dev/null 2>&1;then
+	    CRU="$existspath"
+		#add
+	    if iseq "$option" "a" && isNotEmpty "$cmd";then
+		    "$CRU" d "$cron_id" >/dev/null 2>&1
+		    sleep 1
+		    "$CRU" a "$cron_id" "$min $hour $day $month $week /bin/sh $cmd $action_unlock" >/dev/null 2>&1
+		    return 0
+	    fi
+	    #del
+	    if iseq "$option" "d";then
+	        "$CRU" d "$cron_id" >/dev/null 2>&1
+		    return 0
+	    fi
+	    #list
+	    if iseq "$option" "l";then
+	        "$CRU" l
+		    return 0
+	    fi
+	elif [ -f "$cf" ];then
+		#add
+		if iseq "$option" "a" && isNotEmpty "$cmd" && isNotEmpty "$sn";then
+			sed -i "/$sn.*/d" "$cf"
+			sleep 1
+			echo "$min $hour $day $month $week $cmd" >> "$cf"
+			return 0
+		fi
+		#del
+	    if iseq "$option" "d" && isNotEmpty "$cmd" && isNotEmpty "$sn";then
+	        sed -i "/$sn.*/d" "$cf"
+		    return 0
+	    fi
+		#list
+		if iseq "$option" "l";then
+		cat "$cf"
+		    return 0
+		fi
 	fi
 	return 0
 }
 
 del_cron(){
-    ! isexists "cru" && return 1
-	cru d "$1" >/dev/null 2>&1
+    local CRU=""
+    if isexists "cru" >/dev/null 2>&1;then
+	    CRU="$existspath"
+		"$CRU" d "$1" >/dev/null 2>&1
+		return 0
+	else
+	    return 1
+	fi
 }
 
 isEmpty(){

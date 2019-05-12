@@ -1,4 +1,5 @@
 #!/bin/sh
+export PATH=/bin:/sbin:/lib:/usr/bin:/usr/sbin:/usr/lib:$PATH
 logs(){
     Y_COLOR="\033[0;33;40m"
     YB_COLOR="\033[1;33;40m"
@@ -18,33 +19,52 @@ do_install(){
 	logs "Going..."
 	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z `which uname` ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf /tmp/install.sh;rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
-	#check firmware
-	if $(uname -o | tr 'A-Z' 'a-z' | grep -q 'merlin');then
-		SCRIPTS_PATH=""
-    else
-        logs "The script does not support this firmware[脚本不支持此固件]" && exit 0	
+	
+	#os check
+	OS_TYPE="";PT=""
+	if [ -n "$o" ] && [ -n $(which service) ];then
+		OS_TYPE="merlin"
+    elif [ -n $(which restart_wan) ] && [ -n $(which restart_dns) ] && [ -d "/etc/storage" ];then
+		OS_TYPE="padavan"
+	else
+	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
+		OS_TYPE=""
     fi
+	 
+	if [ "$OS_TYPE" == "merlin" ];then
+	    PT="/jffs"
+	elif [ "$OS_TYPE" == "padavan" ];then
+	    PT="/etc/storage"
+	fi
+	
+	if [ "$OS_TYPE" == "merlin" ];then
+	    nvram set jffs2_enable=1
+	    nvram set jffs2_scripts=1
+	    nvram commit
+        [ -d "/jffs/scripts" ] && chmod +x /jffs/scripts/*
+	fi
+		
 	#check INSTALL_PATH vlue
 	if [ -z "$INSTALL_PATH" ];then
 	    logs "Next you need to type from the keyboard. To interrupt the operation, press ctrl+c[以下需要你从键盘输入, 如想中断操作, 请按ctrl+c]"
-	    echo -en "${INFO}${YB_COLOR}Please enter jffs, USB or uninstall[请你输入jffs, usb或uninstall]${N_COLOR}"
-	    echo -en "$YB_COLOR=>[jffs, usb, uninstall]:${N_COLOR}"
+	    echo -en "${INFO}${YB_COLOR}Please enter nand, USB or uninstall[请你输入nand, usb或uninstall]${N_COLOR}"
+	    echo -en "$YB_COLOR=>[nand, usb, uninstall]:${N_COLOR}"
 	    while :;do
             read v
 		    v=$(echo "$v" | sed 's/[[:space:]]//g' | tr 'A-Z' 'a-z')
-		    if [ "$v" == "jffs" -o "$v" == "usb" -o "$v" == "uninstall" ];then
+		    if [ "$v" == "nand" -o "$v" == "usb" -o "$v" == "uninstall" ];then
 		        INSTALL_PATH="$v"
 		        break
 		    else
-		        echo -en "${INFO}${YB_COLOR}Please enter jffs, USB or uninstall[请你输入jffs, usb或uninstall]${N_COLOR}"
-	            echo -en "$YB_COLOR=>[jffs, usb, uninstall]:${N_COLOR}"
+		        echo -en "${INFO}${YB_COLOR}Please enter nand, USB or uninstall[请你输入nand, usb或uninstall]${N_COLOR}"
+	            echo -en "$YB_COLOR=>[nand, usb, uninstall]:${N_COLOR}"
 		    fi
 	    done
 	fi
 	INSTALL_PATH=$(echo "$INSTALL_PATH" | sed 's/[[:space:]]//g' | tr 'A-Z' 'a-z')
-	if [ "$INSTALL_PATH" != "jffs" -a "$INSTALL_PATH" != "usb" -a "$INSTALL_PATH" != "uninstall" ];then
-	    logs "Parameters must be jffs, usb or uninstall[参数必须是jffs、usb或uninstall]" 
-		logs "Installation to jffs example[安装到jffs示例]: sh $SH jffs"
+	if [ "$INSTALL_PATH" != "nand" -a "$INSTALL_PATH" != "usb" -a "$INSTALL_PATH" != "uninstall" ];then
+	    logs "Parameters must be nand, usb or uninstall[参数必须是nand、usb或uninstall]" 
+		logs "Installation to nand example[安装到nand示例]: sh $SH nand"
 		logs "Installation to usb example[安装到usb示例]: sh $SH usb"
 		logs "Uninstallation all example[卸载示例]: sh $SH uninstall"
 		exit 0
@@ -54,15 +74,11 @@ do_install(){
 	    _uninstall_ "all"
 	    exit 0
 	fi
-	#selecte jffs or usb
+	#selecte nand or usb
 	logs "Installing to $INSTALL_PATH[将安装到${INSTALL_PATH}]"
-	if [ "$INSTALL_PATH" == "jffs" ];then
-	    SCRIPTS_PATH="/jffs/myscripts" 
+	if [ "$INSTALL_PATH" == "nand" ];then
+	    SCRIPTS_PATH="$PT/myscripts" 
 	elif [ "$INSTALL_PATH" == "usb" ];then
-	    nvram set jffs2_enable=1
-	    nvram set jffs2_scripts=1
-	    nvram commit
-        chmod +x  /jffs/scripts/*
 	    logs "Find available active partitions[查找可用的活动分区]"
         for j in $($MOUNT | grep -w 'mnt' | cut -d ' ' -f3);do
 		    logs "$i=>$j"
@@ -131,10 +147,10 @@ do_install(){
 	#Install
     mkdir -p "$SCRIPTS_PATH"    
 	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup"
-	if [ "$INSTALL_PATH" == "jffs" ];then
+	if [ "$INSTALL_PATH" == "nand" ];then
 	    _uninstall_ "usb" 
 	elif [ "$INSTALL_PATH" == "usb" ];then
-	    _uninstall_ "jffs" 
+	    _uninstall_ "nand" 
 	fi
 	cp -af "$TMP_PATH/myscripts/lib" "$SCRIPTS_PATH"
 	cp -af "$TMP_PATH/myscripts/sharealiddns" "$SCRIPTS_PATH"
@@ -155,9 +171,9 @@ do_install(){
 _uninstall_(){
     #uninstall
 	local s="$1";local r=0
-    if [ "$s" == "jffs" ];then
-		if [ -d "/jffs/myscripts/sharealiddns" ];then
-		    rm -rf "/jffs/myscripts/sharealiddns"
+    if [ "$s" == "nand" ];then
+		if [ -d "$PT/myscripts/sharealiddns" ];then
+		    rm -rf "$PT/myscripts/sharealiddns"
 		fi
 	elif [ "$s" == "usb" ];then
 		for j in $($MOUNT | grep -w 'mnt' | cut -d ' ' -f3);do
@@ -167,10 +183,10 @@ _uninstall_(){
 		    i=$(($i+1))
         done
 	elif [ "$s" == "all" ];then
-	    if [ -d "/jffs/myscripts/sharealiddns" ];then
+	    if [ -d "$PT/myscripts/sharealiddns" ];then
 		    r=1
-		    rm -rf "/jffs/myscripts/sharealiddns"
-			logs "Successful uninstallation from /jffs/myscripts/sharealiddns[已成功从/jffs/myscripts/sharealiddns卸载]"
+		    rm -rf "$PT/myscripts/sharealiddns"
+			logs "Successful uninstallation from $PT/myscripts/sharealiddns[已成功从$PT/myscripts/sharealiddns卸载]"
 		fi
 		for j in $($MOUNT | grep -w 'mnt' | cut -d ' ' -f3);do
 		    if [ -d "$j/myscripts/sharealiddns" ];then
@@ -182,17 +198,25 @@ _uninstall_(){
         done
 		[ "$r" -eq 0 ] && logs "Has been uninstallation[已卸载]"
 	fi
-	for v in "/jffs/scripts/wan-start" "/jffs/scripts/ddns-start" "/jffs/scripts/post-mount";do
-		if [ -f "$v" ];then
-	        sed -i "/myshell.*/d" "$v"
-		    sed -i "/myshellproc.*/d" "$v"
-			sed -i "/mymnt.*/d" "$v"
-			sed -i "/myservice.*/d" "$v"
-			sed -i "/wan_start.*/d" "$v"
-            sed -i "/restart_dhcp6c.*/d" "$v"
-            sed -i '/^\s*$/d' "$v"			
-	    fi
-	done
+	if [ "$OS_TYPE" == "merlin" ];then
+	    for v in "$PT/scripts/wan-start" "$PT/scripts/ddns-start" "$PT/scripts/post-mount";do
+		    if [ -f "$v" ];then
+	            sed -i "/myshell.*/d" "$v"
+		        sed -i "/myshellproc.*/d" "$v"
+			    sed -i "/mymnt.*/d" "$v"
+			    sed -i "/myservice.*/d" "$v"
+			    sed -i "/wan_start.*/d" "$v"
+                sed -i "/restart_dhcp6c.*/d" "$v"
+                sed -i '/^\s*$/d' "$v"			
+	        fi
+	    done
+	elif [ "$OS_TYPE" == "padavan" ];then
+	    if [ -f "$PT/post_wan_script.sh" ];then
+		    sed -i "/myshell.*/d" "$PT/post_wan_script.sh"
+		    sed -i "/myshellproc.*/d" "$PT/post_wan_script.sh"
+            sed -i '/^\s*$/d' "$PT/post_wan_script.sh"		
+		fi
+	fi
 }
 do_install "$1" "$0"
 
