@@ -144,14 +144,14 @@ cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubuserco
 1、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。	
 2、接下来是设置aliddns.conf参数，请按上面的要求认真填写。
 3、接下来脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。
-如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到nand)重新设置参数：
+如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到nand的jffs)重新设置参数：
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
 或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。
 大部分情况都是参数设置不正确，使得脚本运行出现错误。
 4、至此，脚本已经安装完毕。
 一行指令就完成了脚本的安装工作，是不是很简单!
 ======================================================================================
-脚本一些功能调用(假设脚本安装到nand)：
+脚本一些功能调用(假设脚本安装到nand的jffs)：
 修改或设置aliddns.conf参数：
 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
 检测aliddns.conf所有域名是否成功解析：
