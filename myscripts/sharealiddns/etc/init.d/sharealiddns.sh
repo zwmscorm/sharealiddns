@@ -2489,12 +2489,11 @@ do_create_scripts(){
 			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
 				    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
 				elif iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	
-				    echo "if [ \$1 == 'up' ];then" >> "$myscripts"
+				    echo "myup=\$1" >> "$myscripts"
 			        echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
 				    echo "myshell=$myshell" >> "$myscripts"
-			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-				    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"	
-					echo 'fi' >> "$myscripts"
+			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"	
+				    echo '[ "$myup" == "up"  -a -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"		
 				fi
 		    else
 			    myshell=$(exurl $myshell)
@@ -2518,12 +2517,11 @@ do_create_scripts(){
 			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
 			    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
 			elif iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	
-			    echo "if [ \$1 == 'up' ];then" >> "$myscripts"
-			    echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
+			    echo "myup=\$1" >> "$myscripts"
+				echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
 				echo "myshell=$myshell" >> "$myscripts"
-			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-				echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"	
-				echo 'fi' >> "$myscripts"
+			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"	
+				echo '[ "$myup" == "up"  -a -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"	
 			fi
         fi
 	    sed -i '/^\s*$/d' "$myscripts"
@@ -2533,9 +2531,7 @@ do_create_scripts(){
 		    if iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	 
 	            sed -i "/myshell.*/d" "$myscripts"
 		        sed -i "/myshellproc.*/d" "$myscripts"
-			    sed -i "/mymnt.*/d" "$myscripts"
-			    sed -i "/myservice.*/d" "$myscripts"
-                sed -i "/restart_dhcp6c.*/d" "$myscripts"
+				sed -i "/myup.*/d" "$myscripts"
                 sed -i '/^\s*$/d' "$myscripts"	
 			else
 			    sed -i "/myshell.*/d" "$myscripts"

@@ -214,6 +214,7 @@ _uninstall_(){
 	    if [ -f "$PT/post_wan_script.sh" ];then
 		    sed -i "/myshell.*/d" "$PT/post_wan_script.sh"
 		    sed -i "/myshellproc.*/d" "$PT/post_wan_script.sh"
+			sed -i "/myup.*/d" "$PT/post_wan_script.sh"
             sed -i '/^\s*$/d' "$PT/post_wan_script.sh"		
 		fi
 	fi
