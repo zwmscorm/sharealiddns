@@ -2687,9 +2687,9 @@ do_init(){
         logs "Usage: $1 {setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client}" "" "yb" "w" >&2
         return 1
     fi
-	
+	local i=1;local j=30;local ver="";local r="";local b=`which basename`
+	local o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
 	#os check
-	local i=1;local j=30;local ver="";local r="";local o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
 	if [ -n "$o" ] && [ -n $(which service) ];then
 		OS_TYPE="merlin"
     elif [ -n $(which restart_wan) ] && [ -n $(which restart_dns) ] && [ -d "/etc/storage" ];then
@@ -2723,9 +2723,9 @@ do_init(){
 		    i=$(sadd $i 1)	
         done
 	fi
-	 
-	if isNotEmpty "$(echo $scripts_sh | grep -o 'mnt')";then
-	    r=$(echo $scripts_sh | awk -F '/mnt/' '{print $2}' | awk -F '/' '{print $1}')	
+
+	if isNotEmpty "$(echo $scripts_mount_name | grep -oE 'mnt|media')";then
+        r=$($b $scripts_mount_name)		
         if echo -e "$r" | grep -q '^[a-zA-Z0-9]\+$' && isge $(str_total "$r") 5;then
 	        r=""
         else
@@ -2734,7 +2734,7 @@ do_init(){
             exit 0			
         fi
     fi
-
+	
 	if iseq "$2" "showlog";then
 	    do_showlog 
 		exit 0
