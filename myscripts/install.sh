@@ -15,14 +15,15 @@ do_install(){
 	local TMP_PATH="/tmp/sharealiddns-master"
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
-	local i=1;local m="";local s="";local l=""
+	local i=1;local m="";local s="";local l="";local o=""
 	logs "Going..."
 	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z "$MOUNT" -o -z "$BN" ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf /tmp/install.sh;rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	
 	#os check
 	OS_TYPE="";PT=""
-	if [ -n "$o" ] && [ -n $(which service) ];then
+	o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
+	if [ "$o" == "merlin" -o -n $(which service) ];then
 		OS_TYPE="merlin"
     elif [ -n $(which restart_wan) ] && [ -n $(which restart_dns) ] && [ -d "/etc/storage" ];then
 		OS_TYPE="padavan"
@@ -147,7 +148,8 @@ do_install(){
 	    logs "Download failed. Please check that the network or wget version is too old and GitHub refuses[下载失败, 请检查网络或wget版本是否太旧, 被Github拒绝]" && exit 0
 	fi
 	#Install
-    mkdir -p "$SCRIPTS_PATH"    
+    mkdir -p "$SCRIPTS_PATH" 
+    chmod +x "$SCRIPTS_PATH" 	
 	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup"
 	if [ "$INSTALL_PATH" == "nand" ];then
 	    _uninstall_ "usb" 
@@ -245,6 +247,3 @@ _rmrowfile_(){
 	sed -i "/${w}/d" "$f"
 }
 do_install "$1" "$0"
-
-
-
