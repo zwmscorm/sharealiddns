@@ -2470,78 +2470,73 @@ do_client(){
 do_create_scripts(){
     local mymode="$1";local myscripts="$2";local myshell="$3";local myshellproc=""
     if iseq "$mymode" "a";then
-        if [ -f "$myscripts" ];then
-		    if isEmpty "$(cat $myscripts | grep -o 'myshell')";then
-		        echo '' >> "$myscripts"
-				if iseq "$myscripts" "/jffs/scripts/wan-start";then
-				    echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
-					echo "[ \$(nvram get ipv6_service | tr 'A-Z' 'a-z') != 'disabled' ] && service restart_dhcp6c" >> "$myscripts"
-				    echo "myshell=$myshell" >> "$myscripts"
-			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-				    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
-				elif iseq "$myscripts" "/jffs/scripts/post-mount";then
-				    echo "myshell=$myshell" >> "$myscripts"
-					echo "mymnt=\$(echo \$myshell | grep -o 'mnt')" >> "$myscripts"
-			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-				    echo '[ -n "$mymnt" -a -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
-				elif iseq "$myscripts" "/jffs/scripts/ddns-start";then
-				    echo "myshell=$myshell" >> "$myscripts"
-			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-				    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
-				elif iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	
-				    echo "myup=\$1" >> "$myscripts"
-			        echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
-				    echo "myshell=$myshell" >> "$myscripts"
-			        echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"	
-				    echo '[ "$myup" == "up"  -a -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"		
-				fi
-		    else
-			    myshell=$(exurl $myshell)
-	            sed -i "s/^myshell=.*/myshell=${myshell}/g" "$myscripts"	
-		    fi
-        else
+        if [ ! -f "$myscripts" ];then
 		    echo "#!/bin/sh" > "$myscripts"
-			if iseq "$myscripts" "/jffs/scripts/wan-start";then
-				echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
-				echo "[ \$(nvram get ipv6_service | tr 'A-Z' 'a-z') != 'disabled' ] && service restart_dhcp6c" >> "$myscripts"
-			    echo "myshell=$myshell" >> "$myscripts"
-			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-			    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
-			elif iseq "$myscripts" "/jffs/scripts/post-mount";then
+		fi
+		if isEmpty "$(cat $myscripts | grep -o 'myshell')";then
+		    echo '' >> "$myscripts"
+		    if iseq "$myscripts" "/jffs/scripts/wan-start";then 
+			    echo "myshell=$myshell" >> "$myscripts"	
+				echo "myshellname=$(echo $myshell| awk -F '/' '{print $NF}')" >> "$myscripts"		
+				echo "myready=1" >> "$myscripts"
+                echo "mynum=0" >> "$myscripts"
+                echo 'while [ "$mynum" -lt 120 ];do' >> "$myscripts"
+                echo '    [ -x "$myshell" ] && myready=0 && break' >> "$myscripts"
+				echo "    mynum=\$((\$mynum+1))" >> "$myscripts"
+				echo "    sleep 1" >> "$myscripts"
+				echo "done" >> "$myscripts" 
+				echo "myshellproc=\$(ps | grep -v grep | grep -o \$myshellname)" >> "$myscripts" 
+				echo 'if [ "$myready" -eq 0 -a -z "$myshellproc" ];then' >> "$myscripts" 
+				echo '    echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
+				echo "    [ \$(nvram get ipv6_service | tr 'A-Z' 'a-z') != 'disabled' ] && service restart_dhcp6c" >> "$myscripts"
+				echo '    "$myshell" update' >> "$myscripts" 
+				echo "fi" >> "$myscripts" 
+			elif iseq "$myscripts" "/jffs/scripts/ddns-start" || iseq "$myscripts" "/jffs/scripts/post-mount";then
 				echo "myshell=$myshell" >> "$myscripts"
-				echo "mymnt=\$(echo \$myshell | grep -o 'mnt')" >> "$myscripts"
-			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-			    echo '[ -n "$mymnt" -a -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
-			elif iseq "$myscripts" "/jffs/scripts/ddns-start";then
-			    echo "myshell=$myshell" >> "$myscripts"
-			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"
-			    echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
+				echo "myshellname=$(echo $myshell| awk -F '/' '{print $NF}')" >> "$myscripts"	
+			    echo "myshellproc=\$(ps | grep -v grep | grep -o \$myshellname)" >> "$myscripts" 
+				echo '[ -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"
 			elif iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	
-			    echo "myup=\$1" >> "$myscripts"
-				echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
-				echo "myshell=$myshell" >> "$myscripts"
-			    echo "myshellproc=\$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -E 'aliddns.sh|sharealiddns.sh')" >> "$myscripts"	
-				echo '[ "$myup" == "up"  -a -z "$myshellproc" -a -x "$myshell" ] && "$myshell" update' >> "$myscripts"	
+			    echo "myshell=$myshell" >> "$myscripts" 
+			    echo "myshellname=$(echo $myshell| awk -F '/' '{print $NF}')" >> "$myscripts"	
+				echo "myready=1" >> "$myscripts"
+                echo "mynum=0" >> "$myscripts"
+				echo "myup=\$1" >> "$myscripts"
+                echo 'while [ "$mynum" -lt 120 ];do' >> "$myscripts"
+                echo '    [ -x "$myshell" ] && myready=0 && break' >> "$myscripts"
+				echo "    mynum=\$((\$mynum+1))" >> "$myscripts"
+				echo "    sleep 1" >> "$myscripts"
+				echo "done" >> "$myscripts" 
+				echo "myshellproc=\$(ps | grep -v grep | grep -o \$myshellname)" >> "$myscripts" 
+                echo 'if [ "$myup" == "up" -a "$myready" -eq 0 -a -z "$myshellproc" ];then' >> "$myscripts" 
+				echo '    echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
+				echo '    "$myshell" update' >> "$myscripts" 
+				echo "fi" >> "$myscripts" 	
 			fi
-        fi
-	    sed -i '/^\s*$/d' "$myscripts"
-	    chmod 0755 "$myscripts"
+		else
+			myshell=$(exurl $myshell)
+	        sed -i "s/^myshell=.*/myshell=${myshell}/g" "$myscripts"	
+		fi   
+        RMSPACEKEYFILE "$myscripts"	"myshell"		
+	    RMSPACEROWFILE "$myscripts"
+	    chmod +x "$myscripts"
     elif iseq "$mymode" "d";then
+	    RMSPACEKEYFILE "$myscripts"	"myshell"		
+	    RMSPACEROWFILE "$myscripts"
         if [ -f "$myscripts" ];then
 		    if iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	 
-	            sed -i "/myshell.*/d" "$myscripts"
-		        sed -i "/myshellproc.*/d" "$myscripts"
-				sed -i "/wan_start.*/d" "$myscripts"
-				sed -i "/myup.*/d" "$myscripts"
-                sed -i '/^\s*$/d' "$myscripts"	
+	            RMCURROWTOLISTFILE "$myscripts" "myshell" 14
+			elif iseq "$myscripts" "/jffs/scripts/wan-start";then 
+			    RMCURROWTOLISTFILE "$myscripts" "myshell" 14
 			else
-			    sed -i "/myshell.*/d" "$myscripts"
-		        sed -i "/myshellproc.*/d" "$myscripts"
-			    sed -i "/mymnt.*/d" "$myscripts"
-			    sed -i "/myservice.*/d" "$myscripts"
-			    sed -i "/wan_start.*/d" "$myscripts"
-                sed -i "/restart_dhcp6c.*/d" "$myscripts"
-                sed -i '/^\s*$/d' "$myscripts"	
+			    RMROWFILE "$myscripts" "myshell"
+				RMROWFILE "$myscripts" "myshellname"
+				RMROWFILE "$myscripts" "myshellproc"
+				#del old
+				RMROWFILE "$myscripts" "myservice"
+				RMROWFILE "$myscripts" "wan_start"
+				RMROWFILE "$myscripts" "restart_dhcp6c"
+                RMSPACEROWFILE "$myscripts"
             fi 			
 	    fi
     fi
