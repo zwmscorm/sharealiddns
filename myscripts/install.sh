@@ -23,9 +23,9 @@ do_install(){
 	#os check
 	OS_TYPE="";PT=""
 	o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
-	if [ "$o" == "merlin" -o -n $(which service) ];then
+	if [ -n "$o" ] && [ -d "/jffs" ] ;then
 		OS_TYPE="merlin"
-    elif [ -n $(which restart_wan) ] && [ -n $(which restart_dns) ] && [ -d "/etc/storage" ];then
+    elif [ -n $(which restart_wan) ] && [ -d "/etc/storage" ];then
 		OS_TYPE="padavan"
 	else
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
