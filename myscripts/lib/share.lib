@@ -156,6 +156,10 @@ ROWTOCOLUMN(){
     sed 's/ /\n/g' | sed '/^\s*$/d'
 }
 
+GETCOLUMN(){
+    echo $(echo "$1" | awk -F ' ' "{print $"$2"}")
+}
+
 RMSURPLUSSPACE(){
     sed 's/  */ /g'
 }
@@ -190,6 +194,61 @@ REPLACESTRINGFILE(){
 
 RMSPACEROWFILE(){
     sed -i '/^\s*$/d' "$1" 
+}
+
+RMSPACEKEYFILE(){
+    local f="$1";local w="$2"
+	sed -i "s~  *${w}~${w}~g" "$f"
+    sed -i "s~${w}  *~${w}~g" "$f"
+}
+
+RMCURROWTOLISTFILE(){
+    local f="$1";local w="$2";local n="$3"
+    sed -i "/${w}/,+${n}d" "$f"
+}
+
+RMCURROWTOENDFILE(){
+    local f="$1";local w="$2";local n=0
+	n=$(sed -n '$=' $f)
+	sed -i "/${w}/,+${n}d" "$f"
+}
+
+RMBETWEENROWFILE(){
+    local f="$1";local n1="$2";local n2="$3"
+	sed -i  ${n1},${n2}d "$f"
+}
+
+RMROWFILE(){
+    local f="$1";local w="$2"
+	sed -i "/${w}/d" "$f"
+}
+
+RMNOROWFILE(){
+    local f="$1";local n="$2"
+	sed -i "${n}d" "$f"
+}
+
+RMENDROWFILE(){
+    local f="$1"
+	sed -i '$d' "$f"
+}
+
+GETROWNO(){
+    local w="$1";local f="$2";local m="$3";local n=0
+	n=$(sed -n "/${w}/=" $f)
+    if [ -n "$n" ];then
+	    if [ -z "$m" ];then
+            echo "$n" 
+		elif [ "$m" == "top" ];then
+            echo "$n" | awk "NR==1{print}"
+		elif [ "$m" == "end" ];then
+		    echo "$n" | awk "END {print}"
+		elif [ "$m" -ge 0 2>/dev/null ];then 
+            echo "$n" | awk "NR==$m{print}"	
+		fi
+    else
+        echo ""
+    fi
 }
 
 urlencode() {
@@ -940,6 +999,16 @@ shellprocess(){
 		    logs "The script is not running..." "" "vb" 
 			return 1
         fi		
+	fi
+}
+
+check_shellproc(){
+    local s="$1"
+	[ -z "$s" ] && return 1
+    if $(ps | grep -v grep | grep -q $s);then
+	    return 0
+	else
+	    return 1
 	fi
 }
 
