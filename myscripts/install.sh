@@ -203,24 +203,46 @@ _uninstall_(){
 	if [ "$OS_TYPE" == "merlin" ];then
 	    for v in "$PT/scripts/wan-start" "$PT/scripts/ddns-start" "$PT/scripts/post-mount";do
 		    if [ -f "$v" ];then
-	            sed -i "/myshell.*/d" "$v"
-		        sed -i "/myshellproc.*/d" "$v"
-			    sed -i "/mymnt.*/d" "$v"
-			    sed -i "/myservice.*/d" "$v"
-			    sed -i "/wan_start.*/d" "$v"
-                sed -i "/restart_dhcp6c.*/d" "$v"
-                sed -i '/^\s*$/d' "$v"			
+			    _rmspacekeyfile_ "$v"	"myshell"		
+	            _rmspacerowfile_ "$v"
+			    if [ "$v" == "$PT/scripts/post-mount" ];then
+				    _rmcurrowtolistfile_ "$v" "myshell" 14
+				else
+				    _rmrowfile_ "$v" "myshell"
+				    _rmrowfile_ "$v" "myshellname"
+				    _rmrowfile_ "$v" "myshellproc"
+				    #del old
+				    _rmrowfile_ "$v" "myservice"
+				    _rmrowfile_ "$v" "wan_start"
+				    _rmrowfile_ "$v" "restart_dhcp6c"
+                    _rmspacerowfile_ "$v"
+				fi
 	        fi
 	    done
 	elif [ "$OS_TYPE" == "padavan" ];then
 	    if [ -f "$PT/post_wan_script.sh" ];then
-		    sed -i "/myshell.*/d" "$PT/post_wan_script.sh"
-		    sed -i "/myshellproc.*/d" "$PT/post_wan_script.sh"
-			sed -i "/myup.*/d" "$PT/post_wan_script.sh"
-			sed -i "/wan_start.*/d" "$PT/post_wan_script.sh"
-            sed -i '/^\s*$/d' "$PT/post_wan_script.sh"		
+		    _rmspacekeyfile_ "$PT/post_wan_script.sh"	"myshell"		
+	        _rmspacerowfile_ "$PT/post_wan_script.sh"
+			_rmcurrowtolistfile_ "$PT/post_wan_script.sh" "myshell" 14
+			_rmspacerowfile_ "$PT/post_wan_script.sh"
 		fi
 	fi
+}
+_rmspacekeyfile_(){
+    local f="$1";local w="$2"
+	sed -i "s~  *${w}~${w}~g" "$f"
+    sed -i "s~${w}  *~${w}~g" "$f"
+}
+_rmspacerowfile_(){
+    sed -i '/^\s*$/d' "$1" 
+}
+_rmcurrowtolistfile_(){
+    local f="$1";local w="$2";local n="$3"
+    sed -i "/${w}/,+${n}d" "$f"
+}
+_rmrowfile_(){
+    local f="$1";local w="$2"
+	sed -i "/${w}/d" "$f"
 }
 do_install "$1" "$0"
 
