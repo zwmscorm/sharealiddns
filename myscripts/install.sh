@@ -207,7 +207,7 @@ _uninstall_(){
 		    if [ -f "$v" ];then
 			    _rmspacekeyfile_ "$v"	"myshell"		
 	            _rmspacerowfile_ "$v"
-			    if [ "$v" == "$PT/scripts/post-mount" ];then
+			    if [ "$v" == "$PT/scripts/wan-start" ];then
 				    _rmcurrowtolistfile_ "$v" "myshell" 14
 				else
 				    _rmrowfile_ "$v" "myshell"
