@@ -81,7 +81,7 @@ do_install(){
 	    SCRIPTS_PATH="$PT/myscripts" 
 	elif [ "$INSTALL_PATH" == "usb" ];then
 	    logs "Find available active partitions[查找可用的活动分区]"
-        for j in $($MOUNT | grep -v 'tmpfs' | grep -wE 'mnt|media' | cut -d ' ' -f3);do
+        for j in $($MOUNT | grep -v 'tmpfs' | grep -wE 'mnt|media|opt' | cut -d ' ' -f3);do
 		    if [ -n $($BN $j) ];then
 		        logs "$i=>$j"
                 eval m$i=$j
@@ -180,7 +180,7 @@ _uninstall_(){
 		    rm -rf "$PT/myscripts/sharealiddns"
 		fi
 	elif [ "$s" == "usb" ];then
-		for j in $($MOUNT | grep -wE 'mnt|media' | cut -d ' ' -f3);do
+		for j in $($MOUNT | grep -wE 'mnt|media|opt' | cut -d ' ' -f3);do
 		    if [ -d "$j/myscripts/sharealiddns" ];then
 		        rm -rf "$j/myscripts/sharealiddns"
 			fi
@@ -192,7 +192,7 @@ _uninstall_(){
 		    rm -rf "$PT/myscripts/sharealiddns"
 			logs "Successful uninstallation from $PT/myscripts/sharealiddns[已成功从$PT/myscripts/sharealiddns卸载]"
 		fi
-		for j in $($MOUNT | grep -wE 'mnt|media' | cut -d ' ' -f3);do
+		for j in $($MOUNT | grep -wE 'mnt|media|opt' | cut -d ' ' -f3);do
 		    if [ -d "$j/myscripts/sharealiddns" ];then
 			    r=1
 		        rm -rf "$j/myscripts/sharealiddns"
