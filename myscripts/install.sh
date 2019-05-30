@@ -9,46 +9,48 @@ logs(){
 	logger  "$1"
 	return 0
 }
+get_os_type(){
+    OS_TYPE="";PT="";isIPV6=0
+	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
+	    OS_TYPE="merlin"
+		[ "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" == "disabled" ] && isIPV6=1
+		PT="/jffs"		
+    elif [ -n $(which restart_wan) ] && [ -f "/etc/storage/post_wan_script.sh" ];then
+	    OS_TYPE="padavan"
+		[ -z "$(nvram get ip6_service | tr 'A-Z' 'a-z')" ] && isIPV6=1
+		PT="/etc/storage"
+    elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'pandorabox');then
+	    OS_TYPE="pandorabox"
+		PT="/etc"
+		[ $(cat /etc/config/network | tr 'A-Z' 'a-z' | grep -w 'ipv6' | awk '{print $3}' | sed "s/'//g" | sed 's/"//g') == "0" ] && isIPV6=1
+    elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'openwrt');then
+	    OS_TYPE="openwrt"
+		PT="/etc"
+		[ $(cat /etc/config/network | tr 'A-Z' 'a-z' | grep -w 'ipv6' | awk '{print $3}' | sed "s/'//g" | sed 's/"//g') == "0" ] && isIPV6=1
+    elif [ -f "/etc/config/network" -a -d "/etc/hotplug.d/iface" ];then
+        OS_TYPE="openwrt"
+		[ $(cat /etc/config/network | tr 'A-Z' 'a-z' | grep -w 'ipv6' | awk '{print $3}' | sed "s/'//g" | sed 's/"//g') == "0" ] && isIPV6=1
+		PT="/etc"
+    else
+	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
+    fi
+	logs "OS is $OS_TYPE, script path is $PT[固件系统是${OS_TYPE}, 安装基本路径是${PT}]"
+	[ "$isIPV6" == "0" ] && logs "Firmware turned on IPV6[固件已开启IPV6]"
+	if [ -n "$OS_TYPE" ];then
+	    return 0
+	else
+	    return 1
+	fi
+}
 do_install(){
-    local INSTALL_PATH="$1";local SH="$2";local TAR=`which tar`;local WGET=`which wget`;local MOUNT=`which mount`;local BN=`which basename`
+    local INSTALL_PATH="$1";local SH="$2"
 	local DOWN_URL="https://codeload.github.com/zwmscorm/sharealiddns/tar.gz/master"
 	local TMP_PATH="/tmp/sharealiddns-master"
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
-	local i=1;local m="";local s="";local l=""
+	local i=1;local m="";local s="";local l="";local n=0
 	logs "Going..."
-	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z "$MOUNT" -o -z "$BN" ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf /tmp/install.sh;rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
-	
-	#os check
-	OS_TYPE="";PT=""
-	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
-		OS_TYPE="merlin"
-	elif [ -n $(which restart_wan) ] && [ -f "/etc/storage/post_wan_script.sh" ];then
-		OS_TYPE="padavan"
-	elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'pandorabox');then
-		OS_TYPE="pandorabox"
-	elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'openwrt');then
-	    OS_TYPE="openwrt"
-	else
-	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
-		OS_TYPE=""
-    fi
-		
-	if [ "$OS_TYPE" == "merlin" ];then
-	    PT="/jffs"
-	elif [ "$OS_TYPE" == "padavan" ];then
-	    PT="/etc/storage"
-	fi
-	
-	#ifup wan
-	#/etc/init.d/network restart  
-	#在/lib/netifd/ppp-up文件内调用上面的脚本，当pppoe网络连接成功时会执行此文件，$4变量为pppoe连接的本地IP。
-    #/usr/bin/update-ip.sh $4 > /dev/null 2>&1 &
-	#$(uci -P/var/state get network.wan.ifname)
-	echo "OS_TYPE====================$OS_TYPE"
-	exit 0
-	
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
 	    nvram set jffs2_scripts=1
@@ -92,6 +94,11 @@ do_install(){
 	    SCRIPTS_PATH="$PT/myscripts" 
 	elif [ "$INSTALL_PATH" == "usb" ];then
 	    logs "Find available active partitions[查找可用的活动分区]"
+		if [ "$OS_TYPE" == "merlin" -o "$OS_TYPE" == "padavan" ];then
+			n=5
+        else
+            n=4		
+		fi
         for j in $($MOUNT | grep -v 'tmpfs' | grep -wE 'mnt|media|opt' | cut -d ' ' -f3);do
 		    if [ -n $($BN $j) ];then
 		        logs "$i=>$j"
@@ -118,7 +125,7 @@ do_install(){
  	            else 
                     eval s=\$m$v
 					l=$($BN $s)
-			        if echo -e "$l" | grep -q '^[a-zA-Z0-9]\+$' && [ $(echo ${#l}) -ge 5 ];then
+			        if echo -e "$l" | grep -q '^[a-zA-Z0-9]\+$' && [ $(echo ${#l}) -ge "$n" ];then
 	                    logs "The selected active partition is ${s}[选定的活动分区是${s}]"
 						SCRIPTS_PATH="$s/myscripts" 
 					    break
@@ -127,6 +134,7 @@ do_install(){
 	                    echo -en "${INFO}${YB_COLOR}Please enter the partition number and press 0 to exit[请输入分区号按0将退出]${N_COLOR}"
 	                    echo -en "$YB_COLOR=>[0~$(($i-1))]:${N_COLOR}"
 					fi
+					
                 fi
 	        else
 	            logs "The partition number must be a number, reinput[分区号必须是数字, 重输]"
@@ -183,6 +191,60 @@ do_install(){
 		exit 0
 	fi
 }
+do_check(){
+    TAR=`which tar`;WGET="";MOUNT=`which mount`;BN=`which basename`;OPENSSL=`which openssl`;NSLOOKUP=`which nslookup`;SORT=`which sort`;IP=`which ip`
+	local r="";local p4="";local p6=""
+	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip"
+	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me"
+	[ -z "$TAR" ] && logs "You have to install tar[你必须安装tar]" && exit 0
+	[ -z "$MOUNT" ] && logs "You have to install mount[你必须安装mount]" && exit 0
+	[ -z "$BN" ] && logs "You have to install basename[你必须安装basename]" && exit 0
+	[ -z "$NSLOOKUP" ] && logs "You have to install nslookup[你必须安装nslookup]" && exit 0
+	[ -z "$SORT" ] && logs "You have to install sort[你必须安装sort]" && exit 0
+	[ -z "$IP" ] && logs "You have to install ip[你必须安装ip]" && exit 0
+	[ -z "$OPENSSL" ] && logs "You have to install openssl[你必须安装openssl]" && exit 0
+	if [ -n `which /usr/bin/wget` ];then
+	    WGET="/usr/bin/wget"
+	elif [ -n `which /usr/sbin/wget` ];then
+	    WGET="/usr/sbin/wget"
+	elif [ -n `which /bin/wget` ];then
+	    WGET="/bin/wget"
+	elif [ -n `which /sbin/wget` ];then
+	    WGET="/sbin/wget"
+	else
+	    WGET=`which wget`
+	fi
+	[ -z "$WGET" ] && logs "You have to install wget[你必须安装wget]" && exit 0
+
+	logs "Firmware compatibility is being check...[正在检测固件兼容性...]"
+	if [ -n "$OPENSSL" ];then
+        r=$('A' | $OPENSSL dgst -sha1 -hmac 'a' -binary | $OPENSSL base64) 2>/dev/null
+	    if [ $? -eq 0 -a -n "$r" ];then
+	        r=""
+	    else
+			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
+			exit 0
+	    fi
+	fi
+	for u in $u4;do
+	    p4=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	    [ $? -eq 0 -a -n "$p4" ] && break   
+	done
+	if [ -z "$p4" ];then
+	    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+		exit 0
+	fi
+	if [ "$isIPV6" == "0" ];then
+	    for u in $u6;do
+	        p6=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	        [ $? -eq 0 -a -n "$p6" ] && break   
+	    done
+		if [ -z "$p6" ];then
+		    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+	    fi
+	fi
+	return 0
+}
 _uninstall_(){
     #uninstall
 	local s="$1";local r=0
@@ -214,11 +276,11 @@ _uninstall_(){
 		[ "$r" -eq 0 ] && logs "Has been uninstallation[已卸载]"
 	fi
 	if [ "$OS_TYPE" == "merlin" ];then
-	    for v in "$PT/scripts/wan-start" "$PT/scripts/ddns-start" "$PT/scripts/post-mount";do
+	    for v in "/jffs/scripts/wan-start" "/jffs/scripts/ddns-start" "/jffs/scripts/post-mount";do
 		    if [ -f "$v" ];then
-			    _rmspacekeyfile_ "$v"	"myshell"		
+			    _rmspacekeyfile_ "$v" "myshell"		
 	            _rmspacerowfile_ "$v"
-			    if [ "$v" == "$PT/scripts/wan-start" ];then
+			    if [ "$v" == "/jffs/scripts/wan-start" ];then
 				    _rmcurrowtolistfile_ "$v" "myshell" 14
 				else
 				    _rmrowfile_ "$v" "myshell"
@@ -233,12 +295,15 @@ _uninstall_(){
 	        fi
 	    done
 	elif [ "$OS_TYPE" == "padavan" ];then
-	    if [ -f "$PT/post_wan_script.sh" ];then
-		    _rmspacekeyfile_ "$PT/post_wan_script.sh"	"myshell"		
-	        _rmspacerowfile_ "$PT/post_wan_script.sh"
-			_rmcurrowtolistfile_ "$PT/post_wan_script.sh" "myshell" 14
-			_rmspacerowfile_ "$PT/post_wan_script.sh"
+	    if [ -f "/etc/storage/post_wan_script.sh" ];then
+		    _rmspacekeyfile_     "/etc/storage/post_wan_script.sh" "myshell"		
+	        _rmspacerowfile_     "/etc/storage/post_wan_script.sh"
+			_rmcurrowtolistfile_ "/etc/storage/post_wan_script.sh" "myshell" 14
+			_rmspacerowfile_     "/etc/storage/post_wan_script.sh"
 		fi
+	elif [ "$OS_TYPE" == "openwrt" -o "$OS_TYPE" == "pandorabox" ];then
+	    rm -rf "/etc/hotplug.d/iface/99-sharealiddns"   
+		rm -rf "/etc/init.d/sharealiddns" 
 	fi
 }
 _rmspacekeyfile_(){
@@ -257,4 +322,4 @@ _rmrowfile_(){
     local f="$1";local w="$2"
 	sed -i "/${w}/d" "$f"
 }
-do_install "$1" "$0"
+get_os_type && do_check && do_install "$1" "$0"
