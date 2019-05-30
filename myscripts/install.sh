@@ -85,7 +85,7 @@ do_install(){
 	#check INSTALL_PATH vlue
 	if [ -z "$INSTALL_PATH" ];then
 	    logs "Next you need to type from the keyboard. To interrupt the operation, press ctrl+c[以下需要你从键盘输入, 如想中断操作, 请按ctrl+c]"
-	    echo -en "${INFO}${YB_COLOR}Please enter nand, USB or uninstall[请你输入nand, usb或uninstall]${N_COLOR}"
+	    echo -en "${INFO}${YB_COLOR}Please enter nand, USB or uninstall[请输入nand, usb或uninstall]${N_COLOR}"
 	    echo -en "$YB_COLOR=>[nand, usb, uninstall]:${N_COLOR}"
 	    while :;do
             read v
