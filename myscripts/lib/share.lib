@@ -1,20 +1,5 @@
 #!/bin/sh
-
 export PATH=/bin:/sbin:/lib:/usr/bin:/usr/sbin:/usr/lib:$PATH
-
-VERSION="8.0"
-ROUTER_MODEL=$(nvram get model)
-MACHINE_TYPE=$(uname -m) 
-HOSTNAME=$(uname -n)
-KERNEL_RELEASE=$(uname -r)
-OS=$(uname -o) 
-KERNEL_VER=$(expr substr `uname -r` 1 3)
-COMPUTER_NAME=$(nvram get computer_name)
-FIRMWARE=$(nvram get firmver)
-BUILDNO=$(nvram get buildno)
-WEBS_STATE_INFO=$(nvram get webs_state_info)
-PRODUCTID=$(nvram get productid)
-[ -z "$ROUTER_MODEL" ] && ROUTER_MODEL="$COMPUTER_NAME"
 
 N_COLOR="\033[0m"
 
@@ -116,6 +101,44 @@ logs(){
     #-------------------------------#	
 	return 0
 }
+
+if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
+	OS_TYPE="merlin"
+elif [ -n $(which restart_wan) ] && [ -f "/etc/storage/post_wan_script.sh" ];then
+	OS_TYPE="padavan"
+elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'pandorabox');then
+	OS_TYPE="pandorabox"
+elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'openwrt');then
+	OS_TYPE="openwrt"
+elif [ -f "/etc/config/network" -a -d "/etc/hotplug.d/iface" ];then
+    OS_TYPE="openwrt"
+else
+	logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
+	OS_TYPE=""
+fi
+
+VERSION="12.0"
+if [ "$OS_TYPE" == "merlin" ];then
+    COMPUTER_NAME=$(nvram get computer_name) 2>/dev/null
+    ROUTER_MODEL=$(nvram get model) 2>/dev/null
+    FIRMWARE=$(nvram get firmver) 2>/dev/null
+    BUILDNO=$(nvram get buildno) 2>/dev/null
+    WEBS_STATE_INFO=$(nvram get webs_state_info) 2>/dev/null
+    PRODUCTID=$(nvram get productid) 2>/dev/null
+else
+    COMPUTER_NAME=""
+	ROUTER_MODEL=""
+	FIRMWARE=""
+	BUILDNO=""
+	WEBS_STATE_INFO=""
+	PRODUCTID=""
+fi
+MACHINE_TYPE=$(uname -m)  
+HOSTNAME=$(uname -n)
+KERNEL_RELEASE=$(uname -r)
+OS=$(uname -o) 
+KERNEL_VER=$(expr substr `uname -r` 1 3)
+[ -z "$ROUTER_MODEL" ] && ROUTER_MODEL="ROUTER"
 
 STRLSP(){
     local str="$1";local n1="$2";local n2="$3"
@@ -579,7 +602,7 @@ do_cron(){
 		if iseq "$option" "a" && isNotEmpty "$cmd" && isNotEmpty "$sn";then
 			sed -i "/$sn.*/d" "$cf"
 			sleep 1
-			echo "$min $hour $day $month $week $cmd" >> "$cf"
+			echo "$min $hour $day $month $week $cmd update" >> "$cf"
 			return 0
 		fi
 		#del
@@ -1004,16 +1027,18 @@ shellprocess(){
 
 check_shellproc(){
     local s="$1"
-	[ -z "$s" ] && return 1
+	[ -z "$s" ] && return 0
     if $(ps | grep -v grep | grep -q $s);then
-	    return 0
-	else
 	    return 1
+	else
+	    return 0
 	fi
 }
 
 _lock(){  
-    flock -$1 $2 
+    if [ -n $(which flock) -a -n $(which exec) ];then
+        flock -$1 $2 
+	fi
 }
 
 _unlocking(){ 
@@ -1023,8 +1048,16 @@ _unlocking(){
 
 _locking(){
     [ -n "$3" ] && rm -f $2 
-    eval "exec $1>\"$2\""
 	trap "_unlocking $1" SIGHUP SIGINT SIGQUIT SIGTERM  
+	if [ -n `which flock` ] && [ -n `which exec` ];then
+        eval "exec $1>\"$2\""
+	else
+	    local SH=$(echo $2 | sed 's/.lock//g' | awk -F '/' '{print $NF}')
+		if check_shellproc "$SH";then
+		    logs "The script is running or locked, exit." "" "rl" "w"
+			exit 0
+		fi
+	fi
 }
 
 xnlock(){
@@ -1049,7 +1082,7 @@ ulock(){
 
 lock_info(){
     logs "$1 is running or locked, exit." "" "rl" "w"
-    exit 1
+    exit 0
 }
 
 check_url(){

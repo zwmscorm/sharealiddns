@@ -15,28 +15,39 @@ do_install(){
 	local TMP_PATH="/tmp/sharealiddns-master"
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
-	local i=1;local m="";local s="";local l="";local o=""
+	local i=1;local m="";local s="";local l=""
 	logs "Going..."
 	[ -z "$TAR" -o -z "$WGET" -o -z "$MOUNT" -o -z "$MOUNT" -o -z "$BN" ] && logs "No wget or tar or mount was found[缺少关键性文件]" && exit 0
     trap "rm -rf /tmp/install.sh;rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	
 	#os check
 	OS_TYPE="";PT=""
-	o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
-	if [ -n "$o" ] && [ -d "/jffs" ] ;then
+	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
 		OS_TYPE="merlin"
-    elif [ -n $(which restart_wan) ] && [ -d "/etc/storage" ];then
+	elif [ -n $(which restart_wan) ] && [ -f "/etc/storage/post_wan_script.sh" ];then
 		OS_TYPE="padavan"
+	elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'pandorabox');then
+		OS_TYPE="pandorabox"
+	elif $(uname -a | tr 'A-Z' 'a-z' | grep -q 'openwrt');then
+	    OS_TYPE="openwrt"
 	else
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
 		OS_TYPE=""
     fi
-	 
+		
 	if [ "$OS_TYPE" == "merlin" ];then
 	    PT="/jffs"
 	elif [ "$OS_TYPE" == "padavan" ];then
 	    PT="/etc/storage"
 	fi
+	
+	#ifup wan
+	#/etc/init.d/network restart  
+	#在/lib/netifd/ppp-up文件内调用上面的脚本，当pppoe网络连接成功时会执行此文件，$4变量为pppoe连接的本地IP。
+    #/usr/bin/update-ip.sh $4 > /dev/null 2>&1 &
+	#$(uci -P/var/state get network.wan.ifname)
+	echo "OS_TYPE====================$OS_TYPE"
+	exit 0
 	
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1

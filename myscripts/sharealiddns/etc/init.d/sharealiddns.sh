@@ -1,6 +1,6 @@
 #!/bin/sh
 #======================================================================================
-export PATH=/bin:/sbin:/lib:/usr/bin:/usr/sbin:/usr/lib:$PATH
+export PATH=/usr/bin:/usr/sbin:/usr/lib:/bin:/sbin:/lib:$PATH
 #======================================================================================
 get_scripts_path(){
 	local d=`which dirname`
@@ -72,7 +72,7 @@ scripts_name=$(get_scripts_name $0)
 scripts_sh=$(get_scripts_sh $0 $scripts_path $scripts_name) 
 #======================================================================================
 aliddns_title="aliddns_plugin"
-aliddns_version="10.0"
+aliddns_version="12.0"
 aliddns_dcu="/sbin/ddns_custom_updated"
 aliddns_root="$scripts_folder"
 aliddns_conf="$aliddns_root/conf/aliddns.conf"
@@ -95,19 +95,18 @@ ARGS0="$0";ARGS2="$2";ARGS3="$3";ARGS4="$4";LS="$logsplit"
 ARGS1=$(echo $1 | awk -F '_' '{print $1}')
 FU=$(echo $1 | awk -F '_' '{print $2}')
 FD=100
-FL="/var/lock/$scripts_name.lock"
+FL="/tmp/$scripts_name.lock" 
 xnlock "$FD" "$FL" "$FU" || lock_info "$scripts_sh"
 #======================================================================================
 logs "" "$LS"
-logs "$ROUTER_MODEL COMPUTER_NAME IS $COMPUTER_NAME"      "" "yb"
-logs "$ROUTER_MODEL KERNEL_RELEASE IS $KERNEL_RELEASE"    "" "yb"
-logs "$ROUTER_MODEL KERNEL_VER IS $KERNEL_VER"            "" "yb"
-logs "$ROUTER_MODEL MACHINE_TYPE IS $MACHINE_TYPE"        "" "yb"
-logs "$ROUTER_MODEL OS IS $OS"                            "" "yb"
-logs "$ROUTER_MODEL BUILDNO IS $BUILDNO"                  "" "yb"
-logs "$ROUTER_MODEL FIRMWARE IS $FIRMWARE"                "" "yb"
+[ -n "$COMPUTER_NAME" ] && logs "$ROUTER_MODEL COMPUTER_NAME IS $COMPUTER_NAME"    "" "yb"
+[ -n "$KERNEL_RELEASE" ] && logs "$ROUTER_MODEL KERNEL_RELEASE IS $KERNEL_RELEASE" "" "yb"
+[ -n "$KERNEL_VER" ] && logs "$ROUTER_MODEL KERNEL_VER IS $KERNEL_VER"             "" "yb"
+[ -n "$MACHINE_TYPE" ] && logs "$ROUTER_MODEL MACHINE_TYPE IS $MACHINE_TYPE"       "" "yb"
+[ -n "$BUILDNO" ] && logs "$ROUTER_MODEL BUILDNO IS $BUILDNO"                      "" "yb"
+[ -n "$OS_TYPE" ] && logs "$ROUTER_MODEL FIRMWARE IS $OS_TYPE"                     "" "yb"
 #======================================================================================
-logs "SHAREALIDDNS VERSION=$aliddns_version" "" "yb"
+logs "SHAREALIDDNS VERSION IS $aliddns_version" "" "yb"
 #======================================================================================
 #======================================================================================
 #======================================================================================
@@ -140,7 +139,6 @@ u6=""
 dns=""
 #======================================================================================
 #First use wage, curl Can not be installed
-MD5SUM=""
 OPENSSL=""
 NSLOOKUP="" 
 IP2="" 
@@ -167,6 +165,8 @@ isPublic_network=1
 isFirst_level_router=1
 iscurl=1
 iswget=1
+isgetexternalipv4=1
+isgetexternalipv6=1
 num_getRecord=1
 Count=1
 SP="&"
@@ -221,40 +221,98 @@ dhcp6cPID=0
 wanstartPID=0
 externalIP4=""
 externalIP6=""
+ETH=""
+isIPV6=0
 isRUN=0
-OS_TYPE=""
 #======================================================================================
 get_url_cmd(){
-    local u="$1";local m="$2";local t="$3";local n="$4";local j="$5"
-	if iseq "$m" "ipv6";then
-	    m=-6
-	elif iseq "$m" "ipv4";then
+    local u="$1";local t="$2";local m="$3";local p=""
+	if iseq "$m" "ipv4";then
 	    m=-4
-	elif iseq "$m" "ipv46";then
-	    m=""
+	elif iseq "$m" "ipv6";then
+	    m=-6
 	else
-	    logs "The parameter error, please check." "" "rb" "e"
-	    exit 0
+	    m=""
 	fi
 	isEmpty "$t" && t=30
-	isEmpty "$n" && n=30
-	isEmpty "$j" && j=3
-    if iseq "$iswget" 0;then
-	    if isEmpty "$m";then
-			echo "$WGET --no-check-certificate -q -t $n -w $j -T $t -O- $u" 
-	    else
-			echo "$WGET $m --no-check-certificate -q -t $n -w $j -T $t -O- $u" 
+	if [ -n "$u" ];then
+	    if [ -n "$WGET" ];then
+	        p=$($WGET $m --no-check-certificate -q -T $t -O- $u) 2>/dev/null
+        elif [ -n "$CURL" ];then
+	        p=$($CURL $m -s --connect-timeout $t $u) 2>/dev/null
+        fi
+	fi
+	echo "$p"
+}
+#======================================================================================
+get_ip_wget(){
+	local u="$1";local t="$2";local m="$3";local wp=""
+	isEmpty "$t" && t=30
+	if [ -n "$WGET" -a -n "$u" ];then
+	    p=$($WGET --no-check-certificate -q -T $t -O- $u) 2>/dev/null
+		if iseq $? 0;then
+			if iseq "$m" "ipv4";then
+				public_ipv4_check "$p" && wp="$p" 
+            elif iseq "$m" "ipv6";then
+				public_ipv6_check "$p" && wp="$p"
+            else
+                wp="$p"			
+			fi
 		fi
-    elif iseq "$iscurl" 0;then
-	    if isEmpty "$m";then
-			echo "$CURL -s --retry $n --retry-delay $j --connect-timeout $t $u"
+	fi
+	echo "$wp"
+}
+#======================================================================================
+get_ip_curl(){
+	local u="$1";local t="$2";local m="$3";local wp=""
+	isEmpty "$t" && t=30
+	if [ -n "$CURL" -a -n "$u" ];then
+	    p=$($CURL -s --connect-timeout $t $u) 2>/dev/null
+		if iseq $? 0;then
+			if iseq "$m" "ipv4";then
+				public_ipv4_check "$p" && wp="$p" 
+            elif iseq "$m" "ipv6";then
+				public_ipv6_check "$p" && wp="$p"
+            else
+                wp="$p"			
+			fi
+		fi
+	fi
+	echo "$wp"
+}
+#======================================================================================
+isgetexternalIPV46(){
+    local m="$1";local r="";local u4="http://ipv4.ident.me";local u6="http://ipv6.ident.me"
+	local f4="/tmp/isgetexternalIPV4.success";local f6="/tmp/isgetexternalIPV6.success"
+    if iseq "$m" "ipv4";then
+        if [ -f "$f4" ];then
+            r=$(cat "$f4" | grep -w 'success' | RMSTRING 'success=')
+			return "$r"
+		else 
+		    r=$($WGET --no-check-certificate -T 15 -O- $u4) 2>/dev/null
+            if isNotEmpty "$r" ;then
+	            echo "success=0" > "$f4"
+                return 0
+            else
+	            echo "success=1" > "$f4"
+                return 1
+            fi
+		fi
+	elif iseq "$m" "ipv6";then
+        if [ -f "$f6" ];then
+		    r=$(cat "$f6" | grep -w 'success' | RMSTRING 'success=')
+			return "$r"
 		else
-			echo "$CURL $m -s --retry $n --retry-delay $j --connect-timeout $t $u"
+		    r=$($WGET --no-check-certificate -T 15 -O- $u6) 2>/dev/null
+            if isNotEmpty "$r" ;then
+	            echo "success=0" > "$f6"
+                return 0
+            else
+	            echo "success=1" > "$f6"
+                return 1
+            fi
 		fi
-    else
-		logs "The $WGET or $CURL versions are too low and must be upgraded." "" "rb" "e"
-	    exit 0
-    fi
+	fi
 }
 #======================================================================================
 get_aliddns_options(){
@@ -430,6 +488,7 @@ get_aliddns_conf(){
 	aliddns_ttl=$(echo "$aliddns_ttl_list"         | awk "{print $"$c"}" | TRIMALL)
 	aliddns_type=$(echo "$aliddns_type_list"       | awk "{print $"$c"}" | TRIMALL)
 	aliddns_lan_mac=$(echo "$aliddns_lan_mac_list" | awk "{print $"$c"}" | TRIMALL | set_lowercase)
+	
 	if iseq "$aliddns_type" "A" || iseq "$aliddns_lan_mac" ":" || iseq "$aliddns_lan_mac" "''" || iseq "$aliddns_lan_mac" '""' || iseq "$aliddns_lan_mac" "no" || iseq "$aliddns_lan_mac" "none" || isEmpty "$aliddns_lan_mac";then
 	    aliddns_lan_mac=""
 	fi
@@ -437,6 +496,7 @@ get_aliddns_conf(){
 	    logs "The value of aliddns_lan_mac[${aliddns_lan_mac}] is wrong, Please check." "" "rb" "e"
 		return 1
 	fi
+	
     if ! check_number "$aliddns_ttl" || isle "$aliddns_ttl" 0;then
 	    logs "The value of aliddns_ttl[${aliddns_ttl}] is wrong, Please check." "" "rb" "e"
 		return 1
@@ -880,6 +940,7 @@ get_Record(){
 		fi
 		logs "$num_getRecord/$jk:Select this address[$aliddns_url] to link aliyun and Geting domain name Record, please wait..." "" "y" 
 	    q=$(aliddns_subdomain_Records "$aliddns_name" "$aliddns_domain" "$Type") 
+		
 		if iseq "$ndebug" 2;then
 		    logs "*********************************************************************************"
      		if iseq "$num_getRecord" 1;then
@@ -912,6 +973,7 @@ get_Record(){
         fi
         num_getRecord=$(sadd $num_getRecord 1)		
 	done
+	
     until [ "$j" -eq "$Record_TotalCount" -o "$r" -eq 1 ];do 
 		j=$(sadd $j 1)			
 		s=$(get_Record_list "$q" "$j")                    >/dev/null 2>&1
@@ -1007,24 +1069,27 @@ set_syslogd(){
 }
 #======================================================================================
 set_ddns_show(){
-    if iseq "$1" 1;then
-	    nvram set ddns_enable_x=1
-		nvram set ddns_server_x="CUSTOM"
-	    nvram set ddns_ipaddr="$3"
-	    nvram set ddns_cache=1528160609,"$3"
-        nvram set ddns_hostname_old="$2"
-		nvram set ddns_hostname_x_old="$2"
-        nvram set ddns_hostname_x="$2"
-	    nvram set ddns_status=1
-		nvram set le_enable=0
-	else
-	    nvram set ddns_enable_x=0
-    fi	
-	nvram commit
+    if iseq "$OS_TYPE" "merlin";then
+        if iseq "$1" 1;then
+	        nvram set ddns_enable_x=1
+		    nvram set ddns_server_x="CUSTOM"
+	        nvram set ddns_ipaddr="$3"
+	        nvram set ddns_cache=1528160609,"$3"
+            nvram set ddns_hostname_old="$2"
+		    nvram set ddns_hostname_x_old="$2"
+            nvram set ddns_hostname_x="$2"
+	        nvram set ddns_status=1
+		    nvram set le_enable=0
+	    else
+	        nvram set ddns_enable_x=0
+        fi	
+	    nvram commit
+	fi
+	return 0
 }
 #======================================================================================
 set_ipv6_config(){
-    if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
+    if iseq "$OS_TYPE" "merlin" && isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
 	    if [ -d /proc/sys/net/ipv6 ];then
 		    #change
             echo 300  > /proc/sys/net/ipv6/neigh/br0/base_reachable_time      #30
@@ -1136,12 +1201,13 @@ aliddns_domain_api(){
 	US=$(echo -n ${US} | $OPENSSL dgst -sha1 -hmac ${KS}${SP} -binary | $OPENSSL base64)
 	
 	QU="${UR}${SP}Signature=$(aliddns_encode ${US})"
-	QU="$(get_url_cmd ${aliddns_url}/?${QU} "ipv46")"
-	
+	QU="$(get_url_cmd ${aliddns_url}/?${QU})"
+
 	if iseq "$ndebug" 2 && iseq "$num_getRecord" 1;then
-	    echo "$QU"
-	else
 	    echo "$($QU)"
+	else
+	    echo "$QU"
+	   
 	fi
 }
 #======================================================================================
@@ -1375,23 +1441,32 @@ do_checkwanip(){
 #======================================================================================
 do_check(){
     isdnsExist="false"
-	if iseq "$aliddns_type" "AAAA" && iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
-	    logs "Your Router ipv6 is disabled, skip." "" "yb" "t"
-		logs "$Count:failed..." "" "rb" "e"
-		##############################################################################################
-		set_ddns_show 0 "$(aliddns_name_real "$routerddns_name" "$routerddns_domain")" "$wan_ipvx_IP"
-		##############################################################################################
-	    return 1
+	if iseq "$aliddns_type" "AAAA";then
+	    if iseq "$OS_TYPE" "merlin";then
+		    if iseq "$isIPV6" 1;then
+	            logs "Your Router ipv6 is disabled, skip." "" "yb" "t"
+		        logs "$Count:failed..." "" "rb" "e"
+		        set_ddns_show 0 "$(aliddns_name_real "$routerddns_name" "$routerddns_domain")" "$wan_ipvx_IP"
+	            return 1
+			fi
+		elif iseq "$OS_TYPE" "padavan" || iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then 
+		    if iseq "$isIPV6" 1;then
+                logs "Your Router ipv6 is disabled, skip." "" "yb" "t"
+		        logs "$Count:failed..." "" "rb" "e"
+			    return 1
+			fi
+	    fi
 	fi
 	if iseq "$aliddns_type" "A" || iseq "$aliddns_type" "AAAA";then
         logs "$Count:[$aliddns_type]-[$aliddns_name.$aliddns_domain]Check has a Record on aliyun[检查阿里云是否有记录]" "" "y"
 		! do_wan_ipaddr && return 1
+	
 	    if get_Record;then
 		    isNotEmpty "$Record_Ids" && do_aliddns_log "getrecord" "success" "t" 
 		else
 		    return 1
 		fi
-		
+	
 	    if ! do_Record_Only_check;then
 		    logs "Your Must remove the excess Record." "" "vb" "w"	
 		    actions="remove"
@@ -1558,52 +1633,57 @@ do_Record_verification(){
 }
 #======================================================================================
 set_wake_host(){
-    local r=0
-	local s=$(nvram get wollist)
-    local l=$(nvram get lan_domain)
-    local b=".$l"
-    local a=$(echo "$(arp -a -i br0)" | grep -v 'incomplete' | awk '{print $1,$4}' | RMSTRING $b )
-    local n=$(echo "$a" | awk 'END{print NR}')
-    local i=1;local wollist='';local sl='<';local sr='>'
-    isEmpty "$a" && return 0
-    until [ "$i" -gt "$n" ];do    
-	    m=$(echo "$a" | awk "NR==$i{print}" | awk '{print $2}' | TRIMALL | set_uppercase)
-		h=$(echo "$a" | awk "NR==$i{print}" | awk '{print $1}' | TRIMALL)
-		iseq "$h" "?" && h="client_$i"
-	    if isNotEmpty "$h" && isNotEmpty "$m";then
-	        wollist="$sl$h$sr$m$wollist"
-			iseq "$r" 0 && isEmpty "$(echo $s | grep -o $m)" && r=1
+   if iseq "$OS_TYPE" "merlin";then
+        local r=0
+	    local s=$(nvram get wollist)
+        local l=$(nvram get lan_domain)
+        local b=".$l"
+        local a=$(echo "$(arp -a -i $ETH)" | grep -v 'incomplete' | awk '{print $1,$4}' | RMSTRING $b )
+        local n=$(echo "$a" | awk 'END{print NR}')
+        local i=1;local wollist='';local sl='<';local sr='>'
+        isEmpty "$a" && return 0
+        until [ "$i" -gt "$n" ];do    
+	        m=$(echo "$a" | awk "NR==$i{print}" | awk '{print $2}' | TRIMALL | set_uppercase)
+		    h=$(echo "$a" | awk "NR==$i{print}" | awk '{print $1}' | TRIMALL)
+		    iseq "$h" "?" && h="client_$i"
+	        if isNotEmpty "$h" && isNotEmpty "$m";then
+	            wollist="$sl$h$sr$m$wollist"
+			    iseq "$r" 0 && isEmpty "$(echo $s | grep -o $m)" && r=1
+	        fi
+		    i=$(sadd $i 1)	
+        done
+	    if isNotEmpty "$wollist" && iseq "$r" 1;then
+	        nvram set wollist="$wollist"
+		    nvram commit
 	    fi
-		i=$(sadd $i 1)	
-    done
-	if isNotEmpty "$wollist" && iseq "$r" 1;then
-	    nvram set wollist="$wollist"
-		nvram commit
 	fi
 	return 0
 }
 #======================================================================================
 goto_ping_wake(){
+    isne "$OS_TYPE" "merlin" && return 0
     local ml="$1";local s0="$aliddns_conf";local s1="aliddns_lan_mac"
 	local p4="";local p6="";local at="";local i=1;local r=0
 	local sl='<';local sr='>';local h=""
-	local wollist=$(nvram get wollist)
-	iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && return 0
-	isEmpty "$ml" && ml=$(cat $s0 | grep -w $s1 | TRIMALL | RMSTRING "$s1=" | set_lowercase)
+	local wollist=$(nvram get wollist) 
+	iseq "$isIPV6" 1 && return 0
+	isEmpty "$ml" && ml=$(cat $s0 | grep -w $s1 | RMSTRING "$s1=" | RMSTRING '"' | RMSTRING "''" | set_lowercase)
 	isEmpty "$ml" && return 0	
-	while :;do
-	    m=$(echo $ml | awk "{print $"$i"}")
-		if isEmpty "$(echo $wollist | grep -o $m)";then
+	for m in $ml;do
+		if isne "$m" "none" && isEmpty "$(echo $wollist | grep -o $m)";then
 		    h="client_$i"
 		    wollist="$sl$h$sr$m$wollist"
 		fi
-		p4=$(echo "$($IP2 -4 neigh show dev br0)" | set_lowercase | grep -w $m | grep -v '^169'  | awk '{print $1}' | tail -n1 | awk '{print $NF}')
-		p6=$(echo "$($IP2 -6 neigh show dev br0)" | set_lowercase | grep -w $m | grep -v '^fe80' | awk '{print $1}' | tail -n1 | awk '{print $NF}')
-		at=$(echo "$($IP2 -6 neigh show dev br0)" | set_lowercase | grep -w $m | grep -v '^fe80' | awk '{print $4}' | tail -n1 | awk '{print $NF}')
-		isEmpty "$p4" && isEmpty "$p6" && break
-		valid_ipv4 "$p4" && ! valid_ipv6 "$p6" && r=1 && break
-		valid_ipv4 "$p4" && valid_ipv6 "$p6" && isNotEmpty "$at" && r=2 && break
+		if isne "$m" "none";then
+		    p4=$(echo "$($IP2 -4 neigh show dev $ETH)" | set_lowercase | grep -w $m | grep -v '^169'  | awk '{print $1}' | tail -n1 | awk '{print $NF}')
+		    p6=$(echo "$($IP2 -6 neigh show dev $ETH)" | set_lowercase | grep -w $m | grep -v '^fe80' | awk '{print $1}' | tail -n1 | awk '{print $NF}')
+	        at=$(echo "$($IP2 -6 neigh show dev $ETH)" | set_lowercase | grep -w $m | grep -v '^fe80' | awk '{print $4}' | tail -n1 | awk '{print $NF}')
+		    isEmpty "$p4" && isEmpty "$p6" && break
+		    valid_ipv4 "$p4" && ! valid_ipv6 "$p6" && r=1 && break
+		    valid_ipv4 "$p4" && valid_ipv6 "$p6" && isNotEmpty "$at" && r=2 && break
+		fi
 		i=$(sadd $i 1) 	
+		
 	done
 	if isNotEmpty "$wollist";then
 	    nvram set wollist="$wollist"
@@ -1613,14 +1693,14 @@ goto_ping_wake(){
 	    logs "" "$LS"
 	    logs "attempt to activate client host[$p4]-[$m]" "" "y" "t"
 	    do_ping4 "$p4" 3 3 >/dev/null 2>&1      
-		do_ether_wake "$m" "br0" >/dev/null 2>&1
+		do_ether_wake "$m" "$ETH" >/dev/null 2>&1
 		logs "" "$LS"
 		return 0
 	elif iseq "$r" 2;then
 	    logs "" "$LS" 
 	    logs "activate client host[$p6]-[$m]-[$at]" "" "y" "t"
 		do_ping4 "$p4" 3 3 >/dev/null 2>&1      
-		do_ether_wake "$m" "br0" >/dev/null 2>&1
+		do_ether_wake "$m" "$ETH" >/dev/null 2>&1
 		logs "" "$LS"
 		return 0
 	fi
@@ -1714,7 +1794,7 @@ goto_again(){
 		if isEmpty "$aliddns_lan_mac";then
 			goto_start $c
 		else
-		    p4=`echo "$($IP2 -4 neigh show dev br0)" | set_lowercase | grep -w $aliddns_lan_mac | grep -v '^169' | awk '{print $1}'`
+		    p4=`echo "$($IP2 -4 neigh show dev $ETH)" | set_lowercase | grep -w $aliddns_lan_mac | grep -v '^169' | awk '{print $1}'`
 			if valid_mac "$aliddns_lan_mac" && isNotEmpty "$p4" && do_ping4 "$p4" 3 3 >/dev/null 2>&1;then
 		        goto_start $c
 			else
@@ -1837,9 +1917,10 @@ goto_remove(){
 }
 #======================================================================================
 find_wan_info(){
-    local prefixes=$1;local primary="0";local prefix="";local wans_mode=$(nvram get wans_mode)
-    wan_ifname="";wan_no=0;wan_proto=""
+    local prefixes=$1;local primary="0";local prefix="";local wans_mode=""
 	if iseq "$OS_TYPE" "merlin";then
+	    wans_mode=$(nvram get wans_mode)
+        wan_ifname="";wan_no=0;wan_proto=""
         if iseq "$wans_mode" "lb" 2>&1;then
 	        for prefix in $prefixes;do
 		        proto=$(nvram get ${prefix}proto)
@@ -1867,14 +1948,20 @@ find_wan_info(){
         fi
 		wan_no=$(echo $prefix | sed 's/^wan//' | sed 's/_//' 2>&1) 
 		iseq "$pppoe_ifname" "any" 2>&1 && return 0
+		if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
+	        isNotEmpty "$wan_ifname" && check_number "$wan_no" && isNotEmpty "$wan_no" && isNotEmpty "$wan_proto" && return 0  
+	    fi
 	elif iseq "$OS_TYPE" "padavan";then
 	    proto=$(nvram get wan_proto)
 	    wan_proto="$proto"
-		#wan_ifname=$(nvram get wan_ifname)
 		wan_ifname="ppp0"
-	fi
-	if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
-	    isNotEmpty "$wan_ifname" && check_number "$wan_no" && isNotEmpty "$wan_no" && isNotEmpty "$wan_proto" && return 0    
+		return 0
+	elif iseq "$OS_TYPE" "pandorabox" || iseq "$OS_TYPE" "openwrt";then
+	    proto=$(uci -P /var/state get network.wan.proto)
+	    wan_proto="$proto"
+		wan_ifname=$(uci -P /var/state get network.wan.ifname)
+		wan_no=""
+		return 0
 	fi
 	return 1
 }
@@ -1931,10 +2018,10 @@ get_wan_ipv46(){
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
 		exit 0
 	fi
-	#get internal Public ip
+	#get internal Public IP
     if iseq "$wan_ifname" "";then
 	    pl=$($IP2 $k addr show                 | sed -n '/inet/{s!.*inet6* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v '^fe80')
-	elif iseq "$wan_ifname" "ppp0";then
+	else
 	    pl=$($IP2 $k addr show dev $wan_ifname | sed -n '/inet/{s!.*inet6* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v '^fe80') 
 	fi
 	for p in $pl;do
@@ -1945,15 +2032,15 @@ get_wan_ipv46(){
             isNotEmpty "$wp" && public_ipv4_check "$wp" && IP_I="$wp" && break  
 		fi	 
 	done
-	#get external Public ip
+	#get external Public IP
 	if iseq "$aliddns_type" "AAAA";then  
 		IP_E="$externalIP6"		
 	elif iseq "$aliddns_type" "A";then	
 		IP_E="$externalIP4"	
 	fi
 	if isNotEmpty "$IP_I" || isNotEmpty "$IP_E";then
-	    logs "[$IP_E]The $xan_ipvx_IP obtained from router external" "" "y"
-	    logs "[$IP_I]The $xan_ipvx_IP obtained from router internal" "" "y" 
+	    logs "[$IP_E]The IP obtained from router external" "" "y"
+	    logs "[$IP_I]The IP obtained from router internal" "" "y" 
 	fi
 	if [ "$proto" == "pppoe" -o "$proto" == "pptp" -o "$proto" == "l2tp" ];then
 	    #First level router
@@ -1995,7 +2082,6 @@ get_wan_ipv46(){
 }
 #======================================================================================
 do_wan_ipaddr(){
-    local eth="br0"
 	logs "Router wan ifname is[${wan_ifname}], wan is[wan${wan_no}], proto is[${wan_proto}]" "" "ys" "t" 
 	if iseq "$aliddns_type" "AAAA";then
 	    logs "Geting wan_ipv6_IP, Please wait..." "" "y" 
@@ -2006,8 +2092,8 @@ do_wan_ipaddr(){
 	if get_wan_ipv46;then
 		if iseq "$aliddns_type" "AAAA";then
 	        if isNotEmpty "$aliddns_lan_mac";then
-		        if ! get_lan_ipv46 "$aliddns_lan_mac" "$eth";then
-				    logs "[$aliddns_lan_mac]client is not active, so it cannot get IPv6 IP, skip[客户端不在活跃状态, 因此无法获取IPv6 IP]" "" "yb" "t"
+		        if ! get_lan_ipv46 "$aliddns_lan_mac" "$ETH";then
+				    logs "[$aliddns_lan_mac]client is not active, so it cannot get IPv6 IP, skip[客户端不在活跃状态, 因此无法获取IPv6 IP]" "" "gb" "t"
 					set_success 0 "$actions" "failed"
 					return 1					
 				fi
@@ -2030,7 +2116,7 @@ do_wan_ipaddr(){
 	    if iseq "$isPublic_network" 1;then
 		    #Public network	
             if iseq "$wan_no" 0 || iseq "$wan_no" 1;then
-		        nvram set "wan${wan_no}_ipaddr"="$wan_ipvx_IP"
+		       iseq "$OS_TYPE" "merlin" && nvram set "wan${wan_no}_ipaddr"="$wan_ipvx_IP"
 		    fi			
 	        logs "The $xan_ipvx_IP[$wan_ipvx_IP] is public IP, and definitely Your complete possession[公网IP并独占]" "" "vl" "t"
 	        return 0
@@ -2094,8 +2180,8 @@ do_speed_dns(){
 		else
 		    if iseq "$OS_TYPE" "merlin";then
 			    r=$(echo $r | sed 's/,/\n/g' | $SORT -g -k1 -t ' ' | awk '{print $2}' | awk "NR==1{print}")
-			elif iseq "$OS_TYPE" "padavan";then
-			    r=$(echo $r | sed 's/,/\n/g' | awk "NR==1{print}" | awk '{print $2}')
+			else
+			    r=$(echo $r | sed 's/,/\n/g' | $SORT -n | awk "NR==1{print}" | awk '{print $2}')
 			fi
 		fi
 		if [ -n "$r" ];then
@@ -2182,6 +2268,14 @@ set_scripts(){
 		    do_create_scripts "a" "/etc/storage/post_wan_script.sh" "$scripts_sh"	
 		elif iseq "$1" "d";then	
 		    do_create_scripts "d" "/etc/storage/post_wan_script.sh" "$scripts_sh"	
+		fi	
+	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then
+	    if iseq "$1" "a";then
+		    do_create_scripts "a" "/etc/hotplug.d/iface/99-sharealiddns" "$scripts_sh"	
+			do_create_scripts "a" "/etc/init.d/sharealiddns" "$scripts_sh"	
+		elif iseq "$1" "d";then	
+		    do_create_scripts "d" "/etc/hotplug.d/iface/99-sharealiddns" "$scripts_sh"	
+			do_create_scripts "d" "/etc/init.d/sharealiddns" "$scripts_sh"	
 		fi	
 	fi
 }
@@ -2413,12 +2507,12 @@ do_geneui64(){
 do_remove_client(){
    local v;local p;local m
    while :;do
-        v=`ip -6 neigh show dev br0 | grep -v '^fe80'`	
+        v=`ip -6 neigh show dev $ETH | grep -v '^fe80'`	
 	    p=$(echo $v | cut -d ' ' -f 1)
 	    m=$(echo $v | cut -d ' ' -f 3)
 	    isEmpty "$p" && isEmpty "$m" && break
 	    logs "remove permanent for client[$v]" "" "gb"
-	    ip -6 neigh del "$p" lladdr "$m" dev br0
+	    ip -6 neigh del "$p" lladdr "$m" dev $ETH
     done
 	return 0
 }
@@ -2437,9 +2531,9 @@ do_client(){
    while :;do
         ii=1
 		t=`date '+%Y-%m-%d-%H:%M:%S'`
-        pl=$(ip $jj neigh show dev br0 | grep -v '^fe80' | grep -v '::1' | awk '{print $1}')
-		ml=$(ip $jj neigh show dev br0 | grep -v '^fe80' | grep -v '::1' | awk '{print $3}')
-		sl=$(ip $jj neigh show dev br0 | grep -v '^fe80' | grep -v '::1' | awk '{print $4}')
+        pl=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $1}')
+		ml=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $3}')
+		sl=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $4}')
 		nn=$(echo "$pl" | awk 'END{print NR}')
 		[ -z "$pl" ] && logs "No client was found[没有发现客户端]" "" "yb" && exit 0
 		until [ "$ii" -gt "$nn" ];do 
@@ -2448,16 +2542,27 @@ do_client(){
 			s=$(echo "$sl" | awk "NR==$ii{print}" | set_lowercase)	
 			if [ -n "$p" -a -n "$m" -a "$s" ];then
                 if [ "$s" == "delay" ];then		
-	                logs "[$t]-[$p]-[$m]-[$s]-[延期邻居]" "" "y"
+	                logs "[$t]-[$p]-[$m]-[$s]-[延时邻居]" "" "y"
 		        elif [ "$s" == "stale" ];then				
 		            logs "[$t]-[$p]-[$m]-[$s]-[过时邻居]" "" "y"
 		        elif [ "$s" == "reachable" ];then		
 		            logs "[$t]-[$p]-[$m]-[$s]-[可达邻居]" "" "y"
-		        elif [ "$s" == "failed" ];then			
-		            logs "[$t]-[$p]-[$m]-[$s]-[废弃邻居]" "" "y"     
+		        elif [ "$s" == "used" ];then			
+		            logs "[$t]-[$p]-[$m]-[$s]-[使用邻居]" "" "y"  
+                elif [ "$s" == "probe" ];then			
+		            logs "[$t]-[$p]-[$m]-[$s]-[探查邻居]" "" "y"     					
+				elif [ "$s" == "failed" ];then			
+		            logs "[$t]-[$p]-[$m]-[$s]-[废弃邻居]" "" "y"  
+                elif [ "$s" == "empty" ];then			
+		            logs "[$t]-[$p]-[$m]-[$s]-[空闲邻居]" "" "y" 
+                elif [ "$s" == "incomplete" ];then			
+		            logs "[$t]-[$p]-[$m]-[$s]-[未完成邻居]" "" "y" 
+                elif [ "$s" == "ref" ];then			
+		            logs "[$t]-[$p]-[$m]-[$s]-[刷新邻居]" "" "y"    		   					
                 else
 			        logs "[$t]-[$p]-[$m]-[$s]-[消失邻居]" "" "g" "t"
 				fi
+				
 			else
 			    logs "[$t]-[$p]-[$m]-[$s]-[消失邻居]" "" "g" "t"
 			fi
@@ -2470,8 +2575,12 @@ do_client(){
 do_create_scripts(){
     local mymode="$1";local myscripts="$2";local myshell="$3";local myshellproc=""
     if iseq "$mymode" "a";then
-        if [ ! -f "$myscripts" ];then
-		    echo "#!/bin/sh" > "$myscripts"
+	    if [ ! -f "$myscripts" ];then
+	        if iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then	
+		        echo "#!/bin/sh /etc/rc.common" > "$myscripts"
+		    else
+		        echo "#!/bin/sh" > "$myscripts"
+			fi
 		fi
 		if isEmpty "$(cat $myscripts | grep -o 'myshell')";then
 		    echo '' >> "$myscripts"
@@ -2480,6 +2589,7 @@ do_create_scripts(){
 				echo "myshellname=$(echo $myshell| awk -F '/' '{print $NF}')" >> "$myscripts"		
 				echo "myready=1" >> "$myscripts"
                 echo "mynum=0" >> "$myscripts"
+				echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
                 echo 'while [ "$mynum" -lt 120 ];do' >> "$myscripts"
                 echo '    [ -x "$myshell" ] && myready=0 && break' >> "$myscripts"
 				echo "    mynum=\$((\$mynum+1))" >> "$myscripts"
@@ -2487,7 +2597,6 @@ do_create_scripts(){
 				echo "done" >> "$myscripts" 
 				echo "myshellproc=\$(ps | grep -v grep | grep -o \$myshellname)" >> "$myscripts" 
 				echo 'if [ "$myready" -eq 0 -a -z "$myshellproc" ];then' >> "$myscripts" 
-				echo '    echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
 				echo "    [ \$(nvram get ipv6_service | tr 'A-Z' 'a-z') != 'disabled' ] && service restart_dhcp6c" >> "$myscripts"
 				echo '    "$myshell" update' >> "$myscripts" 
 				echo "fi" >> "$myscripts" 
@@ -2502,6 +2611,7 @@ do_create_scripts(){
 				echo "myready=1" >> "$myscripts"
                 echo "mynum=0" >> "$myscripts"
 				echo "myup=\$1" >> "$myscripts"
+				echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
                 echo 'while [ "$mynum" -lt 120 ];do' >> "$myscripts"
                 echo '    [ -x "$myshell" ] && myready=0 && break' >> "$myscripts"
 				echo "    mynum=\$((\$mynum+1))" >> "$myscripts"
@@ -2509,11 +2619,36 @@ do_create_scripts(){
 				echo "done" >> "$myscripts" 
 				echo "myshellproc=\$(ps | grep -v grep | grep -o \$myshellname)" >> "$myscripts" 
                 echo 'if [ "$myup" == "up" -a "$myready" -eq 0 -a -z "$myshellproc" ];then' >> "$myscripts" 
-				echo '    echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
 				echo '    "$myshell" update' >> "$myscripts" 
 				echo "fi" >> "$myscripts" 	
+			elif iseq "$myscripts" "/etc/hotplug.d/iface/99-sharealiddns";then
+                echo 'logger "ACTION==========$ACTION==========INTERFACE==========$INTERFACE"' >> "$myscripts"					
+			    echo "myshell=$myshell" >> "$myscripts"	
+				echo "myshellname=$(echo $myshell| awk -F '/' '{print $NF}')" >> "$myscripts"		
+				echo "myready=1" >> "$myscripts"
+                echo "mynum=0" >> "$myscripts"
+				echo '[ "$ACTION" == "ifup" -a "$INTERFACE" == "wan" ] || exit 0' >> "$myscripts"
+				echo 'echo "pid=$$" > "/tmp/wan_start.pid"' >> "$myscripts"
+                echo 'while [ "$mynum" -lt 120 ];do' >> "$myscripts"
+                echo '    [ -x "$myshell" ] && myready=0 && break' >> "$myscripts"
+				echo "    mynum=\$((\$mynum+1))" >> "$myscripts"
+				echo "    sleep 1" >> "$myscripts"
+				echo "done" >> "$myscripts" 
+				echo "myshellproc=\$(ps | grep -v grep | grep -o \$myshellname)" >> "$myscripts" 
+				echo 'if [ "$myready" -eq 0 -a -z "$myshellproc" ];then' >> "$myscripts" 
+				echo '    "$myshell" update' >> "$myscripts" 
+				echo "fi" >> "$myscripts" 
+			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then
+			    echo "START=99" >> "$myscripts"
+				echo "STOP=50" >> "$myscripts"
+				echo "myshell=$myshell" >> "$myscripts"	
+				echo 'logger "$myshell==========runing"' >> "$myscripts"	
+				echo 'restart() { "$myshell" restart; }' >> "$myscripts"
+				echo 'start() { "$myshell" start; }' >> "$myscripts"
+				echo 'stop() { "$myshell" stop; }' >> "$myscripts"
 			fi
 		else
+		    RMSPACEKEYFILE "$myscripts"	"myshell"		
 			myshell=$(exurl $myshell)
 	        sed -i "s/^myshell=.*/myshell=${myshell}/g" "$myscripts"	
 		fi   
@@ -2528,6 +2663,10 @@ do_create_scripts(){
 	            RMCURROWTOLISTFILE "$myscripts" "myshell" 14
 			elif iseq "$myscripts" "/jffs/scripts/wan-start";then 
 			    RMCURROWTOLISTFILE "$myscripts" "myshell" 14
+			elif iseq "$myscripts" "/etc/hotplug.d/iface/99-sharealiddns";then 
+			    rm -rf "$myscripts"
+			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then 
+			    rm -rf "$myscripts"	
 			else
 			    RMROWFILE "$myscripts" "myshell"
 				RMROWFILE "$myscripts" "myshellname"
@@ -2544,93 +2683,162 @@ do_create_scripts(){
 #======================================================================================
 get_wan_startPID(){
     local pid="0"
-    if [ -f "$iswan_start" ];then
-	    pid=$(cat "$iswan_start" | grep -w "pid" | RMSTRING "pid=" | TRIM)
-	    if isNotEmpty "$pid" && check_number "$pid";then
-		    echo "$pid"
-		else
-			echo "0"
-		fi
+	if iseq "$OS_TYPE" "merlin" || iseq "$OS_TYPE" "padavan" || iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then 
+        if [ -f "$iswan_start" ];then
+	        pid=$(cat "$iswan_start" | grep -w "pid" | RMSTRING "pid=" | TRIM)
+	        if isNotEmpty "$pid" && check_number "$pid";then
+		        echo "$pid"
+		    else
+			    echo "0"
+		    fi
+	    else
+	        echo "999"
+	    fi
 	else
-	    echo "0"
+	    echo "999"
 	fi
 }
 #======================================================================================
 get_dhcp6cPID(){
     local PID=""
-	if iseq "$OS_TYPE" "merlin";then	
-	    PID=$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -w 'odhcp6c' | awk '{print $1}')
-	elif iseq "$OS_TYPE" "padavan";then
-	    PID=$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -w 'dhcp6c'  | awk '{print $1}')
-	fi
-    if isNotEmpty "$PID" && check_number "$PID";then
+	PID=$(ps | grep -v grep | tr 'A-Z' 'a-z' | grep -wE 'odhcp6c|dhcp6c' | awk -F ' ' '{print $1}' | tail -n1)
+	if isNotEmpty "$PID" && check_number "$PID";then
 	    echo "$PID"
 	else
 	    echo "0"
 	fi	
 }
 #======================================================================================
+do_pppoe(){
+    if iseq "$OS_TYPE" "merlin";then	
+        if iseq "$1" "ipv46";then	
+		    logs "=========================restart_wan=========================" "" "rl" "w"
+		    service restart_wan >/dev/null 2>&1
+			if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
+			    logs "Force restart dhcp6c to get the correct IPV6 IP[强制重启dhcp6c以获取正确的IPV6 IP]" "" "rl" "w"
+			    logs "FIX=========================restart_dhcp6c=========================FIX" "" "rl" "w"
+		        service restart_dhcp6c >/dev/null 2>&1
+		    fi
+		elif iseq "$1" "ipv4";then	
+		    logs "=========================restart_wan=========================" "" "rl" "w"
+		    service restart_wan >/dev/null 2>&1
+		elif iseq "$1" "ipv6";then
+            if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
+			    logs "Force restart dhcp6c to get the correct IPV6 IP[强制重启dhcp6c以获取正确的IPV6 IP]" "" "rl" "w"
+			    logs "FIX=========================restart_dhcp6c=========================FIX" "" "rl" "w"
+		        service restart_dhcp6c >/dev/null 2>&1
+		    fi		
+		fi
+	elif iseq "$OS_TYPE" "padavan";then
+	    logs "=========================restart_wan=========================" "" "rl" "w"
+		restart_wan >/dev/null 2>&1
+	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then
+	    logs "=========================ifup wan=========================" "" "rl" "w"
+		ifup wan >/dev/null 2>&1
+	fi
+}
+#======================================================================================
 get_externalIP(){
-    local wp="";local r=1;local i=1;local j=0;local t=1
-	externalIP4="";externalIP6="";wanstartPID=0
-	#get externalIP4
+    local r=1;local i=1;local j=3;local wp="";local pl=""
+	externalIP4="";externalIP6="";wanstartPID=0;dhcp6cPID=0
+	#get external IP4
+	logs "Detecting external IPV4 IP[正在探测外网IPV4 IP]" "" "yb" "t"
 	wp="";r=1;i=1;j=$(echo "$u4" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')
-	logs "Detecting external IPV4 IP[正在探测外网IPV4 IP]" "" "yb" "t"	
-    for u in $u4;do
-		wp=$($(get_url_cmd "$u" "ipv4" 6))	
-        wanstartPID=$(get_wan_startPID)	  
-		if isNotEmpty "$wp" && isgt "$wanstartPID" 0 && public_ipv4_check "$wp";then
-		    logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[${u}]" "" "ys" "t"
+	for u in $u4;do
+	    wp=$(get_url_cmd $u 3) >/dev/null 2>&1		
+	    wanstartPID=$(get_wan_startPID)	
+		if isNotEmpty "$wp" && isgt "$wanstartPID" 0;then
+		    logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "ys" "t"
 		    externalIP4="$wp" && r=0 && break
         else
-		    logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[${u}]" "" "rl" "w"
-			if iseq "$OS_TYPE" "merlin";then		
-		        service restart_wan >/dev/null 2>&1
-			elif iseq "$OS_TYPE" "padavan";then
-			    restart_wan >/dev/null 2>&1
-			fi
-			if iseq "$OS_TYPE" "merlin";then 
-			    isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && service restart_dhcp6c >/dev/null 2>&1
-			elif iseq "$OS_TYPE" "padavan";then
-			    restart_wan >/dev/null 2>&1
-			fi
+		    logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "rl" "w"	
+			do_pppoe "ipv46"
 			go_sleep 15   
-			logs "Continue to detection the network..." "" "yb" "t"		
-        fi		
+			logs "Continue to detection the network..." "" "yb" "t"			
+        fi	
 		isge "$i" "$j" && break 
 		i=$(sadd $i 1)
-	done
+    done 
+    if isEmpty "$wp";then
+	    r=1;i=1;j=3
+	    while :;do
+	        if iseq "$wan_ifname" "";then
+	            pl=$($IP2 addr show                 | sed -n '/inet/{s!.*inet* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v 'inet6')
+	        else
+	            pl=$($IP2 addr show dev $wan_ifname | sed -n '/inet/{s!.*inet* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v 'inet6') 
+	        fi
+	        for p in $pl;do
+	            p=$(echo $p | TRIMALL)	
+		        isNotEmpty "$p" && public_ipv4_check "$p" && wp="$p" && break   
+	        done
+		    wanstartPID=$(get_wan_startPID)	 
+		    if isNotEmpty "$wp" && isgt "$wanstartPID" 0;then
+		        logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]" "" "ys" "t"
+		        externalIP4="$wp" && r=0 && break
+            else
+		        logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]" "" "rl" "w"	
+			    do_pppoe "ipv46"
+			    go_sleep 15   
+			    logs "Continue to detection the network..." "" "yb" "t"		
+            fi	
+		    isge "$i" "$j" && break 
+		    i=$(sadd $i 1)
+        done
+	fi
+	
 	if isne "$r" 0;then
         logs "External IPv4 IP undetectable[检测不到外网IPV4 IP]" "" "ra" "w"
-	    do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=$t" "min" "$scripts_sh" 
+	    do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=1" "min" "$scripts_sh" 
 		return 1
 	fi
-	iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && return 0
 	
-	#get externalIP6
-	wp="";r=1;i=1;j=$(echo "$u6" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')
+	iseq "$isIPV6" 1 && return 0
+	
+	#get external IP6
 	logs "Detecting external IPV6 IP[正在探测外网IPV6 IP]" "" "yb" "t"	
+	wp="";r=1;i=1;j=$(echo "$u6" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')
     for u in $u6;do
-		wp=$($(get_url_cmd "$u" "ipv6" 6))	
-        dhcp6cPID=$(get_dhcp6cPID)			
-		if isNotEmpty "$wp" && isgt "$dhcp6cPID" 0 && public_ipv6_check "$wp";then
-			logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[${u}]" "" "ys" "t"
+	        wp=$(get_url_cmd $u 3) >/dev/null 2>&1
+            dhcp6cPID=$(get_dhcp6cPID)	
+		if isNotEmpty "$wp" && isgt "$dhcp6cPID" 0;then
+		    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "ys" "t"
             externalIP6="$wp" && r=0 && break
-        else
-		    logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[${u}]" "" "rl" "w"	
-            ###############################################################################
-	        logs "Force restart dhcp6c to get the correct IPV6 IP[强制重启dhcp6c以获取正确的IPV6 IP]" "" "rl" "w"
-			logs "FIX=========================restart_dhcp6c=========================FIX" "" "rl" "w"
-	        service restart_dhcp6c >/dev/null 2>&1
-			go_sleep 15
-			logs "Continue to detection the network..." "" "yb" "t"	
-	        ###############################################################################
-        fi		
-		isge "$i" "$j" && break 
-		i=$(sadd $i 1)
-	done
+	    else
+	        logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "rl" "w"	
+		    do_pppoe "ipv6"
+		    go_sleep 15
+		    logs "Continue to detection the network..." "" "yb" "t"	
+	    fi
+	    isge "$i" "$j" && break 
+	    i=$(sadd $i 1)
+    done
+	if isEmpty "$wp";then
+	    r=1;i=1;j=3
+	    while :;do
+	        if iseq "$wan_ifname" "";then
+	            pl=$($IP2 addr show                 | sed -n '/inet/{s!.*inet6* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v '^fe80' | grep -v 'inet')
+	        else
+	            pl=$($IP2 addr show dev $wan_ifname | sed -n '/inet/{s!.*inet6* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v '^fe80' | grep -v 'inet') 
+	        fi		
+	        for p in $pl;do
+	            p=$(echo $p | TRIMALL)	
+		        isNotEmpty "$p" && public_ipv6_check "$p" && wp="$p" && break   
+	        done
+			dhcp6cPID=$(get_dhcp6cPID)	
+		    if isNotEmpty "$wp" && isgt "$dhcp6cPID" 0;then
+			    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]" "" "ys" "t"
+				externalIP6="$wp" && r=0 && break
+		    else
+	            logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]" "" "rl" "w"	
+			    do_pppoe "ipv6"
+			    go_sleep 15
+			    logs "Continue to detection the network..." "" "yb" "t"	
+		    fi
+		    isge "$i" "$j" && break 
+		    i=$(sadd $i 1)
+        done
+	fi
 	iseq "$r" 0 && return 0
-	
 	logs "External not have IPV6 IP..." "" "ra" "w"
 	logs "外网确实没有IPV6 IP，请检查：" "" "ra" "w"
 	logs "    1、路由器或光猫设置是否正确。" "" "ra" "w"
@@ -2648,6 +2856,7 @@ do_run_check(){
 }
 #======================================================================================
 do_wan_state_check(){
+    
     local n="$1";local rs="";local rp="";local ep=2
     if [ "$n" == "0" ];then
         rs="$(nvram get wan0_realip_state)"
@@ -2680,32 +2889,9 @@ do_wan_state_check(){
 do_init(){
     if [ "$2" != "setconf" -a "$2" != "start" -a "$2" != "stop" -a "$2" != "restart" -a "$2" != "check" -a "$2" != "update" -a "$2" != "again" -a "$2" != "add" -a "$2" != "removeall" -a "$2" != "remove" -a "$2" != "status" -a "$2" != "monitor" -a "$2" != "checkwanip" -a "$2" != "showlog" -a "$2" != "kill" -a "$2" != "client" ];then
         logs "Usage: $1 {setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client}" "" "yb" "w" >&2
-        return 1
-    fi
-	local i=1;local j=30;local ver="";local r="";local b=`which basename`
-	local o=$(uname -o | tr 'A-Z' 'a-z' | grep -o 'merlin')
-	#os check
-	if [ -n "$o" ] && [ -n $(which service) ];then
-		OS_TYPE="merlin"
-    elif [ -n $(which restart_wan) ] && [ -n $(which restart_dns) ] && [ -d "/etc/storage" ];then
-		OS_TYPE="padavan"
-	else
-	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
-		OS_TYPE=""
-    fi
-	
-	if [ "$2" == "setconf" ];then
-	    set_aliddns_conf
         exit 0
-    fi	
-	
-	#get padavan cron file
-	if iseq "$OS_TYPE" "padavan";then
-	   cron_File=$(ls /etc/storage/cron/crontabs) 
-	   if [ -n "/etc/storage/cron/crontabs/$cron_File" ];then
-	        cron_File="/etc/storage/cron/crontabs/$cron_File"
-	   fi
-	fi
+    fi
+	local i=1;local j=30;local r=""
 	
 	if iseq "$OS_TYPE" "merlin";then
 	    nvram set jffs2_enable=1
@@ -2717,17 +2903,157 @@ do_init(){
 	        sleep 1
 		    i=$(sadd $i 1)	
         done
+		ETH="br0"
+		iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && isIPV6=1
+	elif iseq "$OS_TYPE" "padavan";then
+	    cron_File=$(ls /etc/storage/cron/crontabs) 
+	    if [ -n "/etc/storage/cron/crontabs/$cron_File" ];then
+	        cron_File="/etc/storage/cron/crontabs/$cron_File"
+	    fi
+	    ETH="br0"
+		isEmpty "$(nvram get ip6_service | tr 'A-Z' 'a-z')" && isIPV6=1
+	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then 
+	    cron_File=$(ls /etc/crontabs) 
+	    if [ -n "/etc/crontabs/$cron_File" ];then
+	        cron_File="/etc/crontabs/$cron_File"
+		else
+		    cron_File="/etc/crontabs/root"
+			echo "" > "$cron_File"
+	    fi
+	    ETH="br-lan"
+		iseq "$(cat /etc/config/network | set_lowercase | grep -w 'ipv6' | awk '{print $3}' | RMSTRING "'" | RMSTRING '"')" 0 && isIPV6=1	
+	fi
+	
+	if isexists "sort";then
+	    SORT="$existspath"
+		logs "$SORT exists=0" "" "y" 
+    else
+	    logs "You have to install sort[你必须安装sort]" "" "rb" "e" 
+		exit 0
+	fi
+	
+	if isexists "nslookup";then
+	    NSLOOKUP="$existspath"
+		logs "$NSLOOKUP exists=0" "" "y" 
+	else
+	    logs "You have to install nslookup[你必须安装nslookup]" "" "rb" "e" 
+		exit 0
+	fi
+	
+	if isexists "/usr/bin/openssl";then
+	    OPENSSL="$existspath"
+	elif isexists "/usr/sbin/openssl";then
+	    OPENSSL="$existspath"
+	elif isexists "/bin/openssl";then
+	    OPENSSL="$existspath"
+	elif isexists "/sbin/openssl";then
+		OPENSSL="$existspath"
+	elif isexists "openssl";then
+		OPENSSL="$existspath"
+	else
+	    logs "You have to install openssl[你必须安装openssl]" "" "rb" "e" 
+		exit 0
+	fi
+	
+	if [ -n "$OPENSSL" ];then
+        r=$('A' | $OPENSSL dgst -sha1 -hmac 'a' -binary | $OPENSSL base64) 2>/dev/null
+	    if [ $? -eq 0 -a -n "$r" ];then
+	        logs "$OPENSSL exists=0" "" "y" 
+	    else
+			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
+			exit 0
+	    fi
+	fi
+	
+	if isexists "/usr/bin/ip";then
+	    IP2="$existspath"
+		logs "$IP2 exists=0" "" "y" 
+	elif isexists "/usr/sbin/ip";then
+	    IP2="$existspath"
+		logs "$IP2 exists=0" "" "y" 
+	elif isexists "/bin/ip";then
+	    IP2="$existspath"
+		logs "$IP2 exists=0" "" "y" 
+	elif isexists "/sbin/ip";then
+	    IP2="$existspath"
+		logs "$IP2 exists=0" "" "y" 
+	elif isexists "ip";then
+	    IP2="$existspath"
+		logs "$IP2 exists=0" "" "y" 
+	else
+		logs "You have to install ip[你必须安装ip]" "" "rb" "e" 
+		exit 0
+	fi
+	
+    if isexists "/usr/bin/wget";then
+	    WGET="$existspath"
+		logs "$WGET exists=0" "" "y"
+		iswget=0
+	elif isexists "/usr/sbin/wget";then
+	    WGET="$existspath"
+		logs "$WGET exists=0" "" "y"
+		iswget=0
+	elif isexists "/bin/wget";then
+	    WGET="$existspath"
+		logs "$WGET exists=0" "" "y"
+		iswget=0
+	elif isexists "/sbin/wget";then
+	    WGET="$existspath"
+		logs "$WGET exists=0" "" "y"
+		iswget=0
+	elif isexists "wget";then
+	    WGET="$existspath"
+		logs "$WGET exists=0" "" "y"
+		iswget=0
+	else
+		logs "You did not install wget[你没有安装wget]" "" "y" "w" 
+	fi
+		
+    if isexists "/usr/bin/curl";then
+	    CURL="$existspath"
+		logs "$CURL exists=0" "" "y" 
+		iscurl=0
+	elif isexists "/usr/sbin/curl";then
+	    CURL="$existspath"
+		logs "$CURL exists=0" "" "y" 
+		iscurl=0
+	elif isexists "/bin/curl";then
+	    CURL="$existspath"
+		logs "$CURL exists=0" "" "y" 
+		iscurl=0
+	elif isexists "/sbin/curl";then
+	    CURL="$existspath"
+		logs "$CURL exists=0" "" "y" 
+		iscurl=0
+	elif isexists "curl";then
+	    CURL="$existspath"
+		logs "$CURL exists=0" "" "y" 
+		iscurl=0
+	else
+	    logs "You did not install curl[你没有安装curl]" "" "y" "w" 
 	fi
 
-	if isNotEmpty "$(echo $scripts_mount_name | grep -oE 'mnt|media')";then
-        r=$($b $scripts_mount_name)		
-        if echo -e "$r" | grep -q '^[a-zA-Z0-9]\+$' && isge $(str_total "$r") 5;then
-	        r=""
-        else
-		    logs "Low-level error: USB partition volume label must be set to English or numeric, and the total number must exceed 4 digits." "" "ra" "e"
-	        logs "低级错误：USB分区卷标必须设置为英文或数字，而且总数必须超过4位！" "" "ra" "e"	
-            exit 0			
+	if isEmpty "$WGET" && isEmpty "$CURL";then
+	    logs "You have to install wget or curl[你必须安装wget或curl]" "" "rb" "e" 
+		exit 0
+	fi
+	
+	if iseq "$OS_TYPE" "merlin" || iseq "$OS_TYPE" "padavan";then
+	    if isNotEmpty "$(echo $scripts_mount_name | grep -oE 'mnt|media')";then
+            r=$(basename $scripts_mount_name)		
+            if echo -e "$r" | grep -q '^[a-zA-Z0-9]\+$' && isge $(str_total "$r") 5;then
+	            r=""
+            else
+		        logs "Low-level error: USB partition volume label must be set to English or numeric, and the total number must exceed 4 digits." "" "ra" "e"
+	            logs "低级错误：USB分区卷标必须设置为英文或数字，而且总数必须超过4位！" "" "ra" "e"	
+                exit 0			
+            fi
         fi
+	fi
+    
+	if [ "$2" == "setconf" ];then
+	    set_aliddns_conf
+        exit 0
     fi
 	
 	if iseq "$2" "showlog";then
@@ -2737,78 +3063,17 @@ do_init(){
 	
     if [ ! -f "$aliddns_conf" ];then
         logs "No configuration file [account.conf] can be found, exit." "" "rb" "e"
-	    return 1
+	    exit 0
     fi
 	
-	if isexists "nslookup";then
-	    NSLOOKUP="$existspath"
-	else
-	    logs "Can't find nslookup, exit." "" "rb" "e" 
-		return 1
-	fi
-
-	if isexists "md5sum";then
-	    MD5SUM="$existspath"
-		logs "$MD5SUM exists=0" "" "y" 
-	else
-	    logs "Can't find md5sum, exit." "" "rb" "e" 
-		return 1
-	fi
-	
-	if isexists "openssl";then
-	    OPENSSL="$existspath"
-	    ver=`echo -e $($OPENSSL version) | awk -F' ' '{print $2}'` >/dev/null 2>&1
-	    logs "$OPENSSL exists=0 v$ver" "" "y" 
-	else
-	    logs "Can't find openssl, exit." "" "rb" "e" 
-		return 1
-	fi
-
-	if isexists "ip";then
-	    IP2="$existspath"
-		ver=`echo -e $($IP2 -V) | awk -F' ' '{print $3}'` >/dev/null 2>&1
-		logs "$IP2 exists=0 $ver" "" "y" 
-	else
-	    logs "Can't find ip error." "" "rb" "e" 
-		return 1
-	fi
-    
-    if isexists "wget";then
-	    WGET="$existspath"
-	    ver=`echo -e $($WGET -V) | awk -F' ' '{print $3}'` >/dev/null 2>&1
-	    logs "$WGET exists=0 v$ver" "" "y" 
-	    r=`echo -e $($WGET -V) | set_lowercase | grep -o 'ipv6'` >/dev/null 2>&1
-	    isNotEmpty "$r" && iswget=0
-	fi
-    
-	if isexists "curl";then
-	    CURL="$existspath"
-	    ver=`echo -e $($CURL -V) | awk -F' ' '{print $2}'` >/dev/null 2>&1
-        logs "$CURL exists=0 v$ver" "" "y" 
-	    r=`echo -e $($CURL -V) | set_lowercase | grep -o 'ipv6'` >/dev/null 2>&1
-	    isNotEmpty "$r" && iscurl=0
-	fi
-	
-	#if can't wget and curl, exit 
-	if isEmpty "$WGET" && isEmpty "$CURL";then
-	    logs "Can't find wget and curl, exit." "" "rb" "e" 
-		return 1
-	fi
-	
-	if isexists "sort";then
-	    SORT="$existspath"
-		logs "$SORT exists=0" "" "y" 
-    else
-	    logs "Can't find sort, exit." "" "rb" "e" 
-		return 1
-	fi
-
 	mkdir -p "$aliddns_root/conf" 
     mkdir -p "$aliddns_root/log"  
 	
-    for s in "/tmp/syslog.log" "/tmp/syslog.log-1" "/jffs/syslog.log" "/jffs/syslog.log-1";do
-	    [ -f "$s" ] && [ `wc -c "$s" | awk '{print $1}'` -ge 262191 ] && rm -rf "$s"   
-	done    
+	if iseq "$OS_TYPE" "merlin" || iseq "$OS_TYPE" "padavan";then
+        for s in "/tmp/syslog.log" "/tmp/syslog.log-1" "/jffs/syslog.log" "/jffs/syslog.log-1";do
+	        [ -f "$s" ] && [ `wc -c "$s" | awk '{print $1}'` -ge 262191 ] && rm -rf "$s"   
+	    done    
+	fi
 	
 	set_scripts "a"
 	
@@ -2818,7 +3083,7 @@ do_init(){
 do_begin(){
     if do_init "$1" "$2" "$3" && logs "" "$LS" && get_aliddns_options && set_ipv6_config && get_wan_info && get_externalIP;then   
 		goto_ping_wake
-		nslookup_dns=$(do_speed_dns "$dns")
+		nslookup_dns=$(do_speed_dns "$dns")	 
 		case "$2" in
 	        check)
 		        goto_check "$3"
@@ -2829,6 +3094,9 @@ do_begin(){
 			    goto_start "$3"
 				show_success "$2"
 			    do_realupdate "a" "$isfailed" "$2"
+				;;
+			stop)
+			    do_realupdate "d" "$isfailed" "$2"
 				;;
 			again)
 			    goto_again "$2"
