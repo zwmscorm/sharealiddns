@@ -37,7 +37,11 @@ get_os_type(){
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
     fi
 	logs "OS is $OS_TYPE[固件系统是${OS_TYPE}]"
-	[ "$isIPV6" == "0" ] && logs "Firmware turned on IPV6[固件已开启IPV6]"
+	if [ "$isIPV6" == "0" ];then
+	    logs "Firmware is IPV6 enabled[固件已启用IPV6]"
+	else
+	    logs "Firmware is IPV6 disabled[固件已禁用IPV6]"
+	fi
 	if [ -n "$OS_TYPE" ];then
 	    return 0
 	else
