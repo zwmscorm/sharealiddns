@@ -1,5 +1,7 @@
 #!/bin/sh
-export PATH=/bin:/sbin:/lib:/usr/bin:/usr/sbin:/usr/lib:$PATH
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:$PATH
+TAR=`which tar`;MOUNT=`which mount`;BN=`which basename`;OPENSSL=`which openssl`;
+NSLOOKUP=`which nslookup`;SORT=`which sort`;IP=`which ip`;WGET=`which wget`;OS_TYPE="";PT="";isIPV6=0
 logs(){
     Y_COLOR="\033[0;33;40m"
     YB_COLOR="\033[1;33;40m"
@@ -9,8 +11,8 @@ logs(){
 	logger  "$1"
 	return 0
 }
+
 get_os_type(){
-    OS_TYPE="";PT="";isIPV6=0
 	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
 	    OS_TYPE="merlin"
 		[ "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" == "disabled" ] && isIPV6=1
@@ -34,7 +36,7 @@ get_os_type(){
     else
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
     fi
-	logs "OS is $OS_TYPE, script path is $PT[固件系统是${OS_TYPE}, 安装基本路径是${PT}]"
+	logs "OS is $OS_TYPE[固件系统是${OS_TYPE}]"
 	[ "$isIPV6" == "0" ] && logs "Firmware turned on IPV6[固件已开启IPV6]"
 	if [ -n "$OS_TYPE" ];then
 	    return 0
@@ -42,6 +44,21 @@ get_os_type(){
 	    return 1
 	fi
 }
+
+do_check(){
+	local r="";local p4="";local p6=""
+	[ -z "$TAR" ] && logs "You have to install tar[你必须安装tar]" && exit 0
+	[ -z "$MOUNT" ] && logs "You have to install mount[你必须安装mount]" && exit 0
+	[ -z "$BN" ] && logs "You have to install basename[你必须安装basename]" && exit 0
+	[ -z "$NSLOOKUP" ] && logs "You have to install nslookup[你必须安装nslookup]" && exit 0
+	[ -z "$SORT" ] && logs "You have to install sort[你必须安装sort]" && exit 0
+	[ -z "$IP" ] && logs "You have to install ip[你必须安装ip]" && exit 0
+	[ -z "$OPENSSL" ] && logs "You have to install openssl[你必须安装openssl]" && exit 0
+	[ -z "$OPENSSL" ] && logs "You have to install openssl[你必须安装openssl]" && exit 0
+	[ -z "$WGET" ] && logs "You have to install wget[你必须安装wget]" && exit 0
+	return 0
+}
+
 do_install(){
     local INSTALL_PATH="$1";local SH="$2"
 	local DOWN_URL="https://codeload.github.com/zwmscorm/sharealiddns/tar.gz/master"
@@ -49,8 +66,10 @@ do_install(){
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
 	local i=1;local m="";local s="";local l="";local n=0
+	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip"
+	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me"
 	logs "Going..."
-    trap "rm -rf /tmp/install.sh;rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
+    trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
 	    nvram set jffs2_scripts=1
@@ -149,6 +168,36 @@ do_install(){
 	    rm -rf "$TMP_PATH"
 	    exit 0
 	fi
+	
+	#Firmware compatibility is being check
+	logs "Firmware compatibility is being check...[正在检测固件兼容性...]"
+	if [ -n "$OPENSSL" ];then
+        r=$('A' | $OPENSSL dgst -sha1 -hmac 'a' -binary | $OPENSSL base64) 2>/dev/null
+	    if [ $? -eq 0 -a -n "$r" ];then
+	        r=""
+	    else
+			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
+			exit 0
+	    fi
+	fi
+	for u in $u4;do
+	    p4=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	    [ -n "$p4" ] && break   
+	done
+	if [ -z "$p4" ];then
+	    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+		exit 0
+	fi
+	if [ "$isIPV6" == "0" ];then
+	    for u in $u6;do
+	        p6=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	        [ -n "$p6" ] && break   
+	    done
+		if [ -z "$p6" ];then
+		    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+	    fi
+	fi
+	
 	#Download and tar
 	logs "Please wait while you download it[正在下载, 请稍候]"
 	rm -rf "$TAR_GZ"
@@ -191,60 +240,7 @@ do_install(){
 		exit 0
 	fi
 }
-do_check(){
-    TAR=`which tar`;WGET="";MOUNT=`which mount`;BN=`which basename`;OPENSSL=`which openssl`;NSLOOKUP=`which nslookup`;SORT=`which sort`;IP=`which ip`
-	local r="";local p4="";local p6=""
-	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip"
-	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me"
-	[ -z "$TAR" ] && logs "You have to install tar[你必须安装tar]" && exit 0
-	[ -z "$MOUNT" ] && logs "You have to install mount[你必须安装mount]" && exit 0
-	[ -z "$BN" ] && logs "You have to install basename[你必须安装basename]" && exit 0
-	[ -z "$NSLOOKUP" ] && logs "You have to install nslookup[你必须安装nslookup]" && exit 0
-	[ -z "$SORT" ] && logs "You have to install sort[你必须安装sort]" && exit 0
-	[ -z "$IP" ] && logs "You have to install ip[你必须安装ip]" && exit 0
-	[ -z "$OPENSSL" ] && logs "You have to install openssl[你必须安装openssl]" && exit 0
-	if [ -n `which /usr/bin/wget` ];then
-	    WGET="/usr/bin/wget"
-	elif [ -n `which /usr/sbin/wget` ];then
-	    WGET="/usr/sbin/wget"
-	elif [ -n `which /bin/wget` ];then
-	    WGET="/bin/wget"
-	elif [ -n `which /sbin/wget` ];then
-	    WGET="/sbin/wget"
-	else
-	    WGET=`which wget`
-	fi
-	[ -z "$WGET" ] && logs "You have to install wget[你必须安装wget]" && exit 0
 
-	logs "Firmware compatibility is being check...[正在检测固件兼容性...]"
-	if [ -n "$OPENSSL" ];then
-        r=$('A' | $OPENSSL dgst -sha1 -hmac 'a' -binary | $OPENSSL base64) 2>/dev/null
-	    if [ $? -eq 0 -a -n "$r" ];then
-	        r=""
-	    else
-			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
-			exit 0
-	    fi
-	fi
-	for u in $u4;do
-	    p4=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
-	    [ $? -eq 0 -a -n "$p4" ] && break   
-	done
-	if [ -z "$p4" ];then
-	    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
-		exit 0
-	fi
-	if [ "$isIPV6" == "0" ];then
-	    for u in $u6;do
-	        p6=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
-	        [ $? -eq 0 -a -n "$p6" ] && break   
-	    done
-		if [ -z "$p6" ];then
-		    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
-	    fi
-	fi
-	return 0
-}
 _uninstall_(){
     #uninstall
 	local s="$1";local r=0
@@ -306,20 +302,26 @@ _uninstall_(){
 		rm -rf "/etc/init.d/sharealiddns" 
 	fi
 }
+
 _rmspacekeyfile_(){
     local f="$1";local w="$2"
 	sed -i "s~  *${w}~${w}~g" "$f"
     sed -i "s~${w}  *~${w}~g" "$f"
 }
+
 _rmspacerowfile_(){
     sed -i '/^\s*$/d' "$1" 
 }
+
 _rmcurrowtolistfile_(){
     local f="$1";local w="$2";local n="$3"
     sed -i "/${w}/,+${n}d" "$f"
 }
+
 _rmrowfile_(){
     local f="$1";local w="$2"
 	sed -i "/${w}/d" "$f"
 }
-get_os_type && do_check && do_install "$1" "$0"
+
+get_os_type && do_check && do_install "$1" "$0"          
+#=========================================the end====================================#
