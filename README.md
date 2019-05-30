@@ -26,7 +26,7 @@
 *--------------------------------------------------分割线下是安装指令-----------------------------------------------------------*  
 ***cd /tmp/;wget --no-check-certificate -O /tmp/install.sh [https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh](https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh) /tmp/install.sh***     
 *--------------------------------------------------分割线上是安装指令-----------------------------------------------------------*  
-***固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本！***   
+***注意：固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本！***   
 **然后按提示进行操作：**  
 **1、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。  
 2、接下来是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。   
