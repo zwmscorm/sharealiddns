@@ -50,7 +50,6 @@ get_os_type(){
 }
 
 do_check(){
-	local r="";local p4="";local p6=""
 	[ -z "$TAR" ] && logs "You have to install tar[你必须安装tar]" && exit 0
 	[ -z "$MOUNT" ] && logs "You have to install mount[你必须安装mount]" && exit 0
 	[ -z "$BN" ] && logs "You have to install basename[你必须安装basename]" && exit 0
@@ -69,9 +68,10 @@ do_install(){
 	local TMP_PATH="/tmp/sharealiddns-master"
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
-	local i=1;local m="";local s="";local l="";local n=0
+	local i=1;local m="";local s="";local l="";local n=0;local r="";local p4="";local p6=""
 	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip"
 	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me"
+	
 	logs "Going..."
     trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	if [ "$OS_TYPE" == "merlin" ];then
