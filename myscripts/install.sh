@@ -35,6 +35,7 @@ get_os_type(){
 		PT="/etc"
     else
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
+		return 1
     fi
 	logs "OS is $OS_TYPE[固件系统是${OS_TYPE}]"
 	if [ "$isIPV6" == "0" ];then
