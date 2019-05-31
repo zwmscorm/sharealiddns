@@ -58,3 +58,5 @@
         8、检测IPV6客户端状态：
         sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6
 ###更多指令参看readme.txt。
+
+
