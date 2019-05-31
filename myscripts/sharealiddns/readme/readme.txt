@@ -1,10 +1,10 @@
 ﻿======================================================================================
-sharealiddns脚本说明文档：
+脚本说明文档：
 ======================================================================================
-sharealiddns脚本是共享的，你可自由下载和使用，但不得用于商业目的，引用时请注明来源。
-本脚本当初是放在国内的K&S论坛上方便大家下载和使用，但经常习惯性地被K&S屏蔽，这就不符合
-共享精神了，所以决定放在全球知名的开源github上共大家下载和使用。个人看来，K&S后面的S
-可以删除了，你觉得呢？
+　　sharealiddns脚本是共享的，你可自由下载和使用，但不得用于商业目的，不得转载抄袭，
+以保证脚本代码的完整性。本脚本当初是放在国内的K&S论坛上方便大家下载和使用，但经常习
+惯性地被K&S屏蔽，这就不符合共享精神了，所以决定放在全球知名的开源github社区上托管共
+大家下载和使用。个人看来，K&S后面的S可以删除了，你觉得呢？
 ======================================================================================
 脚本使用条件：
 1、安装asuswrt-merlin官方固件的路由器或安装以asuswrt-merlin源码编译的第三方固件路由器。
@@ -137,65 +137,79 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
     aliddns_type="AAAA AAAA AAAA AAAA AAAA"
     aliddns_lan_mac="none none none none none"   
 ======================================================================================
-安装方法：
-准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell中粘贴下面指令：
-------------------------------------------------------分割线下是安装指令-------------------------------------------------------------
+1、准备好winscp和xshell工具软件，如国产FinalShell免费版软件。
+　　2、要求固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本和运行本脚本。
+　　　 对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell
+　　　 命令行窗口中粘贴下面安装软件包指令：
+　　　 opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates
+       如只安装或升级wget，则粘贴下面的指令：  
+       opkp update && opkg install wget  
+　　　 耐心等待直至安装完成。
+　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：
+-----------------------------------------------------分割线下是安装指令----------------------------------------------------------
 cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh /tmp/install.sh
-------------------------------------------------------分割线上是安装指令-------------------------------------------------------------
-注意：固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本！
-然后按提示进行操作：
-1、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。	
-2、接下来是设置aliddns.conf参数，请按上面的要求认真填写。
-3、接下来脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。
-如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到nand)重新设置参数：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
-或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。
-大部分情况都是参数设置不正确，使得脚本运行出现错误。
-4、至此，脚本已经安装完毕。
-一行指令就完成了脚本的安装工作，是不是很简单!
+-----------------------------------------------------分割线上是安装指令----------------------------------------------------------
+　　　 接着按提示进行操作：
+　　4、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。
+　　5、接着是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。
+　　6、接着脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。
+　　　 如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到asuswrt-merlin固件nand的jffs)重新设置参数：
+　　　 sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
+　　　 或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。
+　　　 大部分情况都是参数设置不正确，使得脚本运行出现错误。
+　　　 至此，脚本已经安装完毕。
+　　　 一行指令就完成了脚本的安装工作，是不是很简单!
+    7、如脚本安装到asuswrt-merlin固件的nand，则脚本的的路径是： 
+       /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh
+    8、如脚本安装到padavan固件的nand，则脚本的的路径是：
+	   /etc/storage/myscripts/sharealiddns/etc/init.d/sharealiddns.sh
+	9、如脚本安装到pandorabox、lede/openwrt固件的的nand，则脚本的的路径是：
+       /etc/myscripts/sharealiddns/etc/init.d/sharealiddns.sh
+	10、如脚本安装到各固件的usb，则脚本的的路径视具体的情况而定。
 ======================================================================================
-脚本一些功能调用(假设脚本安装到nand)：
-修改或设置aliddns.conf参数：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
-检测aliddns.conf所有域名是否成功解析：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check
-或
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 0
-检测aliddns.conf第3个域名是否成功解析：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 3
-增加或更新aliddns.conf所有域名:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart	
-或 
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 0
-增加或更新aliddns.conf第3个域名:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 3
-删除aliddns.conf所有域名:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0
-或
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh removeall
-删除aliddns.conf第3域名:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 3
-设置aliddns.conf第3域名解析记录为禁用:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 0
-设置aliddns.conf第3域名解析记录为启用:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 1
-设置aliddns.conf所有域名解析记录为启用:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 1
-设置aliddns.conf所有域名解析记录为禁用:
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 0
-对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
-对aliddns.conf第3域名进行兼容性和压力测试(开发模式专用)：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor 3
-对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
-检测客户端状态：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4
-或
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6
-检测公网IP：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip
-显示日志：
-sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh showlog
+部分运行脚本指令：
+	下面以脚本安装到asuswrt-merlin固件的nand为例：
+    修改或设置aliddns.conf参数：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf
+    检测aliddns.conf所有域名是否成功解析：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check
+        或
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 0
+    检测aliddns.conf第3个域名是否成功解析：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check 3
+    增加或更新aliddns.conf所有域名:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart	
+        或 
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 0
+    增加或更新aliddns.conf第3个域名:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart 3
+    删除aliddns.conf所有域名:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0
+        或
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh removeall
+    删除aliddns.conf第3域名:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 3
+    设置aliddns.conf第3域名解析记录为禁用:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 0
+    设置aliddns.conf第3域名解析记录为启用:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 3 1
+    设置aliddns.conf所有域名解析记录为启用:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 1
+    设置aliddns.conf所有域名解析记录为禁用:
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh status 0 0
+    对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
+    对aliddns.conf第3域名进行兼容性和压力测试(开发模式专用)：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor 3
+    对aliddns.conf所有域名进行兼容性和压力测试(开发模式专用)：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor
+    检测客户端状态：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4
+        或
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6
+    检测公网IP：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip
+    显示日志：
+        sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh showlog
 ======================================================================================
 ======================================================================================
