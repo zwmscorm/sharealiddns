@@ -23,7 +23,7 @@
        　　2、要求固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本和运行本脚本。      
        　　　  对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell     
        　　　  命令行窗口中粘贴下面安装软件包指令：     
-       　　　  opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates     
+       　　　  `opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates`     
        　　　  耐心等待直至安装完成。     
        　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：   
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
@@ -34,7 +34,7 @@
        　　5、接着是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。     
        　　6、接着脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。     
        　　　  如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到asuswrt-merlin nand的jffs)重新设置参数：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf`    
        　　　  或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。     
        　　　  大部分情况都是参数设置不正确，使得脚本运行出现错误。     
        　　　  至此，脚本已经安装完毕。     
@@ -42,21 +42,21 @@
      
    ## 部分运行脚本指令(假设脚本安装到asuswrt-merlin nand的jffs):  
 　　**1、设置aliddns.conf参数：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf      
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf `     
        　　2，增加或更新所有域名：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart     
+       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart`     
        　　3，检测所有域名是否成功解析：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check`     
        　　4、删除所有域名:     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh remove 0`     
        　　5、监控域名解析：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor`     
        　　6、检测公网IPV4 IP或公网IPV6 IP：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip     
+       　　　  1sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip`     
        　　7、检测IPV4客户端状态：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4`     
        　　8、检测IPV6客户端状态：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6**    
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6`**    
 
   ## [更多指令参看说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
             
