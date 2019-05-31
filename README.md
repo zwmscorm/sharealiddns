@@ -44,7 +44,7 @@
 　　**1、设置aliddns.conf参数：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf `     
        　　2，增加或更新所有域名：     
-       　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart`     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh restart`     
        　　3，检测所有域名是否成功解析：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh check`     
        　　4、删除所有域名:     
@@ -52,7 +52,7 @@
        　　5、监控域名解析：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor`     
        　　6、检测公网IPV4 IP或公网IPV6 IP：     
-       　　　  1sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip`     
+       　　　  `1sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip`     
        　　7、检测IPV4客户端状态：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4`     
        　　8、检测IPV6客户端状态：     
