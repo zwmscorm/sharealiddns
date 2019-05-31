@@ -24,6 +24,8 @@
        　　　  对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell     
        　　　  命令行窗口中粘贴下面安装软件包指令：     
        　　　  `opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates`     
+              如只安装或升级wget，则粘贴下面的指令：  
+              `opkp update && opkg install wget`  
        　　　  耐心等待直至安装完成。     
        　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：   
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
