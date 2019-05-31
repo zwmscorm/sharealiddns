@@ -3,7 +3,7 @@
 得呢。**
 # 脚本使用条件：  
 　　**1、安装asuswrt-merlin官方固件的路由器或安装以asuswrt-merlin源码编译的第三方固件路由器。     
-　　   　　2、安装padavan固件的路由器。       
+       　　2、安装padavan固件的路由器。       
        　　3、安装pandorabox固件的路由器。     
        　　4、安装lede/openwrt固件的路由器。     
        　　5、你必须到阿里云进行域名实名认证。     
