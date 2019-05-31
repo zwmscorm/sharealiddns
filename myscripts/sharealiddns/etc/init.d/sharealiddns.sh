@@ -2906,6 +2906,14 @@ do_init(){
 		ETH="br0"
 		iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && isIPV6=1
 	elif iseq "$OS_TYPE" "padavan";then
+	    if [ "$(nvram get wan_ppp_alcp)" == "0" -o "$(nvram get wan_ppp_echo_en)" == "0" ];then
+	        nvram set wan_ppp_alcp=1
+            nvram set wan_ppp_echo_en=1
+            nvram set wan_ppp_echo_failure=6
+            nvram set wan_ppp_echo_interval=30
+		    nvram commit
+			restart_wan >/dev/null 2>&1
+		fi
 	    cron_File=$(ls /etc/storage/cron/crontabs) 
 	    if [ -n "/etc/storage/cron/crontabs/$cron_File" ];then
 	        cron_File="/etc/storage/cron/crontabs/$cron_File"
@@ -2913,7 +2921,7 @@ do_init(){
 	    ETH="br0"
 		isEmpty "$(nvram get ip6_service | tr 'A-Z' 'a-z')" && isIPV6=1
 	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then 
-	    r=`uci get network.wan.keepalive` 2>/dev/null
+	    r=$(uci get network.wan.keepalive) 2>/dev/null
         if isEmpty "$r";then
             uci set network.wan.keepalive='3 5'
             uci commit   
@@ -3081,9 +3089,15 @@ do_init(){
 	    done    
 	fi
 	
-	rm -rf "/root/$scripts_name"	
-	ln -sf "$scripts_sh" "/root/$scripts_name"	
-	chmod +x "/root/$scripts_name"
+	if [ -d "/root" ];then
+	    rm -rf "/root/$scripts_name"	
+	    ln -sf "$scripts_sh" "/root/$scripts_name"	
+	    chmod +x "/root/$scripts_name"
+	elif [ -d "/home/root" ];then
+	    rm -rf "/home/root/$scripts_name"	
+	    ln -sf "$scripts_sh" "/home/root/$scripts_name"	
+	    chmod +x "/home/root/$scripts_name"
+	fi
 	
 	set_scripts "a"
 	
