@@ -39,6 +39,9 @@ cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubuserco
        　　　  大部分情况都是参数设置不正确，使得脚本运行出现错误。     
        　　　  至此，脚本已经安装完毕。     
        　　　  一行指令就完成了脚本的安装工作，是不是很简单!**       
+     
+   ## 部分运行脚本指令(假设脚本安装到asuswrt-merlin nand的jffs):  
+   
  
   
 
