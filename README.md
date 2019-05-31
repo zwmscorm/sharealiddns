@@ -40,7 +40,7 @@
        　　　  至此，脚本已经安装完毕。     
        　　　  一行指令就完成了脚本的安装工作，是不是很简单!**       
      
-   ## 部分运行脚本指令(假设脚本安装到asuswrt-merlin nand的jffs):  
+   ## 部分运行脚本指令(假设脚本安装到asuswrt-merlin固件的nand):  
 　　**1、设置aliddns.conf参数：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf `     
        　　2，增加或更新所有域名：     
