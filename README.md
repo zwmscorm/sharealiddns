@@ -29,7 +29,7 @@
        　　　  耐心等待直至安装完成。     
        　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：   
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
-`cd /tmp/ && wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh && sh /tmp/install.sh`    
+`cd /tmp/ && wget --no-check-certificate -O /tmp/sharealiddns-install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------  
        　　　  接着按提示进行操作：     
        　　4、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。     
