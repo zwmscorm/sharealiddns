@@ -2913,6 +2913,12 @@ do_init(){
 	    ETH="br0"
 		isEmpty "$(nvram get ip6_service | tr 'A-Z' 'a-z')" && isIPV6=1
 	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then 
+	    r=`uci get network.wan.keepalive` 2>/dev/null
+        if isEmpty "$r";then
+            uci set network.wan.keepalive='3 5'
+            uci commit   
+            /etc/init.d/network restart 
+        fi
 	    cron_File=$(ls /etc/crontabs) 
 	    if [ -n "/etc/crontabs/$cron_File" ];then
 	        cron_File="/etc/crontabs/$cron_File"
