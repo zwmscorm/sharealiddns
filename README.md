@@ -18,8 +18,25 @@
        　　5、不支持中文域名。     
        　　6、更多功能只有使用中才发现。**       
   # [更多说明请点击此处参看脚本说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)     
-  ## 安装方法：    
-  
+  ## 安装方法：         
+　　**1、准备好winscp和xshell工具软件，如国产FinalShell免费版软件。            
+       　　2、要求固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本和运行本脚本。      
+       　　对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell     
+       　　命令行窗口中粘贴下面安装软件包指令：     
+       　　opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates     
+       　　耐心等待直至安装完成。     
+       　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：     
+       　　cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh /tmp/install.sh
+       　　接着按提示进行操作：     
+       　　4、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。     
+       　　5、接着是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。     
+       　　6、接着脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。     
+       　　如果aliddns.conf参数设置错误，请运行下面的指令(假设脚本安装到asuswrt-merlin nand的jffs)重新设置参数：     
+       　　sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh setconf     
+       　　或者使用winscp直接进入/jffs/myscripts/sharealiddns/conf目录对aliddns.conf进行修改。     
+       　　大部分情况都是参数设置不正确，使得脚本运行出现错误。     
+       　　至此，脚本已经安装完毕。     
+       　　一行指令就完成了脚本的安装工作，是不是很简单!**       
  
   
 
