@@ -3081,6 +3081,10 @@ do_init(){
 	    done    
 	fi
 	
+	rm -rf "/root/$scripts_name"	
+	ln -sf "$scripts_sh" "/root/$scripts_name"	
+	chmod +x "/root/$scripts_name"
+	
 	set_scripts "a"
 	
     return 0
