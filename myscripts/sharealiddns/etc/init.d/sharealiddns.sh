@@ -2906,7 +2906,7 @@ do_init(){
 		ETH="br0"
 		iseq "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && isIPV6=1
 	elif iseq "$OS_TYPE" "padavan";then
-	    if [ "$(nvram get wan_ppp_alcp)" == "0" -o "$(nvram get wan_ppp_echo_en)" == "0" ];then
+	    if [ "$(nvram get wan_ppp_alcp)" != "1" -o "$(nvram get wan_ppp_echo_en)" != "1" ];then
 	        nvram set wan_ppp_alcp=1
             nvram set wan_ppp_echo_en=1
             nvram set wan_ppp_echo_failure=6
