@@ -42,11 +42,11 @@
        　　　  至此，脚本已经安装完毕。     
        　　　  一行指令就完成了脚本的安装工作，是不是很简单!     
        　　7、如脚本安装到asuswrt-merlin固件的nand，则安装脚本的的路径是：      
-       　　　  `/jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`     
-       　　8、如脚本安装到padavan固件的的nand，则安装脚本的的路径是：
-       　　　  `/etc/storage/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`     
-       　　9、如脚本安装到pandorabox、lede/openwrt固件的的nand，则安装脚本的的路径是：     
-       　　　  `/etc/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`**     
+       　　　  `/jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`           
+       　　8、如脚本安装到padavan固件的的nand，则安装脚本的的路径是：      
+       　　　  `/etc/storage/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`           
+       　　9、如脚本安装到pandorabox、lede/openwrt固件的的nand，则安装脚本的的路径是：           
+       　　　  `/etc/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`**           
      
    ## 部分运行脚本指令(假设脚本安装到asuswrt-merlin固件的nand):  
 　　**1、设置aliddns.conf参数：     
