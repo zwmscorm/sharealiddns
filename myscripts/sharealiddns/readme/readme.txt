@@ -143,7 +143,7 @@ islog设置为1时开启脚本运行日志，设置为0时关闭脚本运行日�
 　　　 命令行窗口中粘贴下面安装软件包指令：
 　　　 opkg update && opkg install wget openssl-util libustream-openssl
        如只安装或升级wget，则粘贴下面的指令：  
-       opkp update && opkg install wget  
+       opkg update && opkg install wget  
 　　　 耐心等待直至安装完成。
 　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------
