@@ -22,15 +22,15 @@
 ## [更多说明请点击此处参看脚本说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
 
 ## 安装方法：
-**准备好winscp和xshell工具软件，如国产FinalShell免费版软件，在xshell或FinalShell命令行窗口中粘贴下面安装指令：**    
+***准备好winscp和xshell工具软件，如国产FinalShell免费版软件。   
+注意：固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本！ 
+对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，安装指令如下：  
+  opkp update    
+  opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates  
+在xshell或FinalShell命令行窗口中粘贴下面安装指令：***      
 *--------------------------------------------------分割线下是安装指令-----------------------------------------------------------*  
 ***cd /tmp/;wget --no-check-certificate -O /tmp/install.sh [https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh](https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh) /tmp/install.sh***     
 *--------------------------------------------------分割线上是安装指令-----------------------------------------------------------*  
-***注意:   
-固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本！ 
-对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，安装指令如下：  
-  opkp update    
-  opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates***   
 **然后按提示进行操作：**  
 **1、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。  
 2、接下来是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。   
