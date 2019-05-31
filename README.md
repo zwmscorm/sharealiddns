@@ -57,6 +57,8 @@ cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubuserco
        　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4     
        　　8、检测IPV6客户端状态：     
        　　　  sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv6**    
+
+ ## 更多指令参看readme.txt。  
             
  
   
