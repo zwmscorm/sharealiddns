@@ -46,7 +46,8 @@
        　　8、如脚本安装到padavan固件的nand，则脚本的的路径是：      
        　　　  `/etc/storage/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`           
        　　9、如脚本安装到pandorabox、lede/openwrt固件的的nand，则脚本的的路径是：           
-       　　　  `/etc/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`**           
+       　　　  `/etc/myscripts/sharealiddns/etc/init.d/sharealiddns.sh`  
+       　　10、如脚本安装到各固件的usb，则脚本的的路径视具体的情况而定。**   
      
    ## 部分运行脚本指令(假设脚本安装到asuswrt-merlin固件的nand):  
 　　**1、设置aliddns.conf参数：     
