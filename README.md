@@ -28,8 +28,8 @@
 *--------------------------------------------------分割线上是安装指令-----------------------------------------------------------*  
 ***注意：固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本！ 
 对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，安装指令如下：***   
-  **opkp update  
-  opkg install libustream-openssl ca-bundle ca-certificates**  
+  ***opkp update  
+  opkg install libustream-openssl ca-bundle ca-certificates***  
 **然后按提示进行操作：**  
 **1、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。  
 2、接下来是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。   
