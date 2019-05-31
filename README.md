@@ -21,10 +21,10 @@
   ## 安装方法：         
 　　**1、准备好winscp和xshell工具软件，如国产FinalShell免费版软件。            
        　　2、要求固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本和运行本脚本。      
-       　　对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell     
-       　　命令行窗口中粘贴下面安装软件包指令：     
-       　　opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates     
-       　　耐心等待直至安装完成。     
+       　　　对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell     
+       　　　命令行窗口中粘贴下面安装软件包指令：     
+       　　　opkp update && opkg install wget openssl-util libustream-openssl ca-bundle ca-certificates     
+       　　　耐心等待直至安装完成。     
        　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：     
        　　cd /tmp/;wget --no-check-certificate -O /tmp/install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/install.sh;sh /tmp/install.sh
        　　接着按提示进行操作：     
