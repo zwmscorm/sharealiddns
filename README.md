@@ -61,7 +61,7 @@
        　　5、监控域名解析：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh monitor`     
        　　6、检测公网IPV4 IP或公网IPV6 IP：     
-       　　　  `1sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip`     
+       　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh checkwanip`     
        　　7、检测IPV4客户端状态：     
        　　　  `sh /jffs/myscripts/sharealiddns/etc/init.d/sharealiddns.sh client ipv4`     
        　　8、检测IPV6客户端状态：     
