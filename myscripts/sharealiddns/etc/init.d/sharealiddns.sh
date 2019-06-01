@@ -99,7 +99,6 @@ FL="/tmp/$scripts_name.lock"
 xnlock "$FD" "$FL" "$FU" || lock_info "$scripts_sh"
 #======================================================================================
 logs "" "$LS"
-[ -n "$COMPUTER_NAME" ] && logs "$ROUTER_MODEL COMPUTER_NAME IS $COMPUTER_NAME"    "" "yb"
 [ -n "$KERNEL_RELEASE" ] && logs "$ROUTER_MODEL KERNEL_RELEASE IS $KERNEL_RELEASE" "" "yb"
 [ -n "$KERNEL_VER" ] && logs "$ROUTER_MODEL KERNEL_VER IS $KERNEL_VER"             "" "yb"
 [ -n "$MACHINE_TYPE" ] && logs "$ROUTER_MODEL MACHINE_TYPE IS $MACHINE_TYPE"       "" "yb"
