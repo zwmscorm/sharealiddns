@@ -1426,6 +1426,13 @@ do_Record_Only_check(){
 }
 #======================================================================================
 do_checkwanip(){
+    if iseq "$aliddns_type" "AAAA" && iseq "$isipv6_domain" 0;then
+		set_success 1 "$actions" "skiped"	
+	    return 1
+	elif iseq "$aliddns_type" "A" && iseq "$isipv4_domain" 0;then
+		set_success 1 "$actions" "skiped"	
+	    return 1
+	fi
     if iseq "$aliddns_type" "A" || iseq "$aliddns_type" "AAAA";then
 	    logs "Router wan ifname is[${wan_ifname}], wan is[wan${wan_no}], proto is[${wan_proto}]" "" "ys" "t" 
 		if get_wan_ipv46;then
@@ -1440,6 +1447,15 @@ do_checkwanip(){
 #======================================================================================
 do_check(){
     isdnsExist="false"
+
+	if iseq "$aliddns_type" "AAAA" && iseq "$isipv6_domain" 0;then
+		set_success 1 "$actions" "skiped"	
+	    return 1
+	elif iseq "$aliddns_type" "A" && iseq "$isipv4_domain" 0;then
+		set_success 1 "$actions" "skiped"	
+	    return 1
+	fi
+	
 	if iseq "$aliddns_type" "AAAA";then
 	    if iseq "$OS_TYPE" "merlin";then
 		    if iseq "$isIPV6" 1;then
@@ -1457,8 +1473,10 @@ do_check(){
 	    fi
 	fi
 	if iseq "$aliddns_type" "A" || iseq "$aliddns_type" "AAAA";then
+	    
         logs "$Count:[$aliddns_type]-[$aliddns_name.$aliddns_domain]Check has a Record on aliyun[检查阿里云是否有记录]" "" "y"
 		! do_wan_ipaddr && return 1
+	
 	
 	    if get_Record;then
 		    isNotEmpty "$Record_Ids" && do_aliddns_log "getrecord" "success" "t" 
@@ -1526,6 +1544,13 @@ do_check(){
 #======================================================================================
 do_start(){
     local q="";local id=""
+	if iseq "$aliddns_type" "AAAA" && iseq "$isipv6_domain" 0;then
+		set_success 1 "$actions" "skiped"	
+	    return 1
+	elif iseq "$aliddns_type" "A" && iseq "$isipv4_domain" 0;then
+		set_success 1 "$actions" "skiped"	
+	    return 1
+	fi
     logs "$Count:[$aliddns_type]-[$aliddns_name.$aliddns_domain] $actions operations will be performed..." "" "y"
 	if iseq "$actions" "added";then
  		q=$(aliddns_domain_add "$aliddns_name" "$aliddns_domain" "$wan_ipvx_IP" "$aliddns_type") 
@@ -1582,7 +1607,6 @@ do_status(){
 }
 #======================================================================================
 do_remove(){
-    local q="";local id=""
 	! get_Record >/dev/null 2>&1 && return 1
 	isEmpty "$Record_Ids" && logs "$Count:[$aliddns_type]-[$aliddns_name.$aliddns_domain] is does not exist or has been remove." "" "gb" "t" && return 1
 	for i in $Record_Ids;do
@@ -1660,6 +1684,7 @@ set_wake_host(){
 }
 #======================================================================================
 goto_ping_wake(){
+    iseq "$isipv6_domain" 0 && return 0
     isne "$OS_TYPE" "merlin" && return 0
     local ml="$1";local s0="$aliddns_conf";local s1="aliddns_lan_mac"
 	local p4="";local p6="";local at="";local i=1;local r=0
@@ -2713,7 +2738,7 @@ do_pppoe(){
         if iseq "$1" "ipv46";then	
 		    logs "=========================restart_wan=========================" "" "rl" "w"
 		    service restart_wan >/dev/null 2>&1
-			if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
+			if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && iseq "$isipv6_domain" 1 && iseq "$isIPV6" 0;then
 			    logs "Force restart dhcp6c to get the correct IPV6 IP[强制重启dhcp6c以获取正确的IPV6 IP]" "" "rl" "w"
 			    logs "FIX=========================restart_dhcp6c=========================FIX" "" "rl" "w"
 		        service restart_dhcp6c >/dev/null 2>&1
@@ -2722,7 +2747,7 @@ do_pppoe(){
 		    logs "=========================restart_wan=========================" "" "rl" "w"
 		    service restart_wan >/dev/null 2>&1
 		elif iseq "$1" "ipv6";then
-            if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled";then
+            if isne "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" "disabled" && iseq "$isipv6_domain" 1 && iseq "$isIPV6" 0;then
 			    logs "Force restart dhcp6c to get the correct IPV6 IP[强制重启dhcp6c以获取正确的IPV6 IP]" "" "rl" "w"
 			    logs "FIX=========================restart_dhcp6c=========================FIX" "" "rl" "w"
 		        service restart_dhcp6c >/dev/null 2>&1
@@ -2741,57 +2766,65 @@ get_externalIP(){
     local r=1;local i=1;local j=3;local wp="";local pl=""
 	externalIP4="";externalIP6="";wanstartPID=0;dhcp6cPID=0
 	#get external IP4
-	logs "Detecting external IPV4 IP[正在探测外网IPV4 IP]" "" "yb" "t"
-	wp="";r=1;i=1;j=$(echo "$u4" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')
-	for u in $u4;do
-	    wp=$(get_url_cmd $u 3) >/dev/null 2>&1		
-	    wanstartPID=$(get_wan_startPID)	
-		if isNotEmpty "$wp" && isgt "$wanstartPID" 0;then
-		    logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "ys" "t"
-		    externalIP4="$wp" && r=0 && break
-        else
-		    logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "rl" "w"	
-			do_pppoe "ipv46"
-			go_sleep 15   
-			logs "Continue to detection the network..." "" "yb" "t"			
-        fi	
-		isge "$i" "$j" && break 
-		i=$(sadd $i 1)
-    done 
-    if isEmpty "$wp";then
-	    r=1;i=1;j=3
-	    while :;do
-	        if iseq "$wan_ifname" "";then
-	            pl=$($IP2 addr show                 | sed -n '/inet/{s!.*inet* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v 'inet6')
-	        else
-	            pl=$($IP2 addr show dev $wan_ifname | sed -n '/inet/{s!.*inet* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v 'inet6') 
-	        fi
-	        for p in $pl;do
-	            p=$(echo $p | TRIMALL)	
-		        isNotEmpty "$p" && public_ipv4_check "$p" && wp="$p" && break   
-	        done
-		    wanstartPID=$(get_wan_startPID)	 
-		    if isNotEmpty "$wp" && isgt "$wanstartPID" 0;then
-		        logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]" "" "ys" "t"
+	if iseq "$isipv4_domain" 1;then
+	    logs "Detecting external IPV4 IP[正在探测外网IPV4 IP]" "" "yb" "t"
+	    wp="";r=1;i=1;j=$(echo "$u4" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')	
+	    for u in $u4;do
+	        wp=$(get_url_cmd $u 3) >/dev/null 2>&1		
+	        wanstartPID=$(get_wan_startPID)	
+		    if isNotEmpty "$wp" && public_ipv4_check "$wp" && isgt "$wanstartPID" 0;then
+		        logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "yl" "t"
 		        externalIP4="$wp" && r=0 && break
             else
-		        logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]" "" "rl" "w"	
-			    do_pppoe "ipv46"
-			    go_sleep 15   
-			    logs "Continue to detection the network..." "" "yb" "t"		
-            fi	
+			    logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "yl" "t"	
+			    if isgt "$i" 10;then
+			        do_pppoe "ipv46"
+			        go_sleep 15   
+			        logs "Continue to detection the network..." "" "yb" "t"			
+                fi
+            fi				
 		    isge "$i" "$j" && break 
 		    i=$(sadd $i 1)
-        done
+        done 
+        if isEmpty "$wp";then
+	        r=1;i=1;j=3
+	        while :;do
+	            if iseq "$wan_ifname" "";then
+	                pl=$($IP2 addr show                 | sed -n '/inet/{s!.*inet* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v 'inet6')
+	            else
+	                pl=$($IP2 addr show dev $wan_ifname | sed -n '/inet/{s!.*inet* !!;s!/.*!!p}' | sed 's/peer.*//' | grep -v 'inet6') 
+	            fi
+	            for p in $pl;do
+	                p=$(echo $p | TRIMALL)	
+		            isNotEmpty "$p" && public_ipv4_check "$p" && wp="$p" && break   
+	            done
+		        wanstartPID=$(get_wan_startPID)	 
+		        if isNotEmpty "$wp" && isgt "$wanstartPID" 0;then
+		            logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]" "" "yl" "t"
+		            externalIP4="$wp" && r=0 && break
+                else
+		            logs "ERROR=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]" "" "yl" "t"	
+			        do_pppoe "ipv46"
+			        go_sleep 15   
+			        logs "Continue to detection the network..." "" "yb" "t"		
+                fi	
+		        isge "$i" "$j" && break 
+		        i=$(sadd $i 1)
+            done
+	    fi
+	    if isne "$r" 0;then
+            logs "External IPv4 IP undetectable[检测不到外网IPV4 IP]" "" "ra" "w"
+	        do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=1" "min" "$scripts_sh" 
+		    return 1
+	    fi
+	else
+	    wanstartPID=$(get_wan_startPID)	
 	fi
 	
-	if isne "$r" 0;then
-        logs "External IPv4 IP undetectable[检测不到外网IPV4 IP]" "" "ra" "w"
-	    do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=1" "min" "$scripts_sh" 
-		return 1
+	if iseq "$isipv6_domain" 0 || iseq "$isIPV6" 1;then
+	    dhcp6cPID=$(get_dhcp6cPID)	
+		return 0
 	fi
-	
-	iseq "$isIPV6" 1 && return 0
 	
 	#get external IP6
 	logs "Detecting external IPV6 IP[正在探测外网IPV6 IP]" "" "yb" "t"	
@@ -2799,14 +2832,16 @@ get_externalIP(){
     for u in $u6;do
 	        wp=$(get_url_cmd $u 3) >/dev/null 2>&1
             dhcp6cPID=$(get_dhcp6cPID)	
-		if isNotEmpty "$wp" && isgt "$dhcp6cPID" 0;then
-		    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "ys" "t"
+		if isNotEmpty "$wp" && public_ipv6_check "$wp" && isgt "$dhcp6cPID" 0;then
+		    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "yl" "t"
             externalIP6="$wp" && r=0 && break
-	    else
-	        logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "rl" "w"	
-		    do_pppoe "ipv6"
-		    go_sleep 15
-		    logs "Continue to detection the network..." "" "yb" "t"	
+		else
+		    logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "yl" "t"	
+	        if isgt "$i" 10;then
+		        do_pppoe "ipv6"
+		        go_sleep 15
+		        logs "Continue to detection the network..." "" "yb" "t"
+            fi				
 	    fi
 	    isge "$i" "$j" && break 
 	    i=$(sadd $i 1)
@@ -2825,10 +2860,10 @@ get_externalIP(){
 	        done
 			dhcp6cPID=$(get_dhcp6cPID)	
 		    if isNotEmpty "$wp" && isgt "$dhcp6cPID" 0;then
-			    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]" "" "ys" "t"
+			    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]" "" "yl" "t"
 				externalIP6="$wp" && r=0 && break
 		    else
-	            logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]" "" "rl" "w"	
+	            logs "ERROR=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]" "" "yl" "t"	
 			    do_pppoe "ipv6"
 			    go_sleep 15
 			    logs "Continue to detection the network..." "" "yb" "t"	
