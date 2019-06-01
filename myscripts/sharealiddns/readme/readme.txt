@@ -145,6 +145,7 @@ option ipv6 '0'
     aliddns_type="AAAA AAAA AAAA AAAA AAAA"
     aliddns_lan_mac="none none none none none"   
 ======================================================================================
+安装方法：
     1、准备好winscp和xshell工具软件，如国产FinalShell免费版软件。
 　　2、要求固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本和运行本脚本。
 　　　 对pandorabox、lede/openwrt固件，可能还要安装https协议所需的软件包，在xshell或FinalShell
