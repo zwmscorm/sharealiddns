@@ -20,8 +20,8 @@
          
  ## 重要提示：    
 　　**如果你要进行IPV6域名解析，首先确认运营商已经推送IPV6，其次确保路由器固件支持IPV6并已开启IPV6功能，否则必须关闭IPV6，
-  如何关闭IPV6？可以在路由器界面上进行设置，比如pandorabox、lede/openwrt固件的路由器需在网络-接口-WAN-高级设置
--Obtain IPv6-Address Disabled-禁用。或者打开/etc/config/network文件，按下面设置：  
+  如何关闭IPV6？可以在路由器界面上进行设置，比如pandorabox、lede/openwrt固件的路由器需在网络-接口--WAN--高级设置
+--Obtain IPv6-Address Disabled--禁用。或者打开/etc/config/network文件，按下面设置：  
 option  ipv6  '0'  
 重启，使设置生效。**   
   # [更多说明请点击此处参看脚本说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)       
