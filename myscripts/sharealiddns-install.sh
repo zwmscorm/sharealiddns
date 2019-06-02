@@ -94,7 +94,7 @@ do_install(){
 		        INSTALL_PATH="$v"
 		        break
 		    else
-		        echo -en "${INFO}${YB_COLOR}Please enter nand, USB or uninstall[请你输入nand, usb或uninstall]${N_COLOR}"
+		        echo -en "${INFO}${YB_COLOR}Please enter nand, USB or uninstall[请输入nand, usb或uninstall]${N_COLOR}"
 	            echo -en "$YB_COLOR=>[nand, usb, uninstall]:${N_COLOR}"
 		    fi
 	    done
