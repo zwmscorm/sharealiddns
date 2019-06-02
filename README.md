@@ -83,8 +83,8 @@ option  ipv6  '0'
 
   ## [更多指令参看说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)  
             
-  # [使用中有问题请issue](https://github.com/zwmscorm/sharealiddns/issues)  
-                                                    2019-06-02 zwmscorm
+  ### [使用中有问题请issue](https://github.com/zwmscorm/sharealiddns/issues) ###  
+                                                    ***2019-06-02 zwmscorm***
  
   
 
