@@ -122,7 +122,7 @@ option ipv6 '0'
     远程访问：
         终端1: http://home.abc.com(有证书：https://home.abc.com)
         终端2: http://nas.abc.com(有证书：https://nas.abc.com)
-        如果域名解析已经成功，但终端设备还是无法访问，这是因为win操作系统对IPV6支持还不完善，你需要在windows command下运行：
+        如果域名解析已经成功，但终端设备还是无法访问，这是因为windows操作系统对IPV6支持还不完善，你需要在windows command下运行：
         ipconfig/flushdns
 
 路由器同时支持IPV4和IPV6双网络的例子：	
