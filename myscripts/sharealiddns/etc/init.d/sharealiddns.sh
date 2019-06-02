@@ -238,7 +238,7 @@ get_url_cmd(){
 	    if [ -n "$WGET" ];then
 	        p=$($WGET $m --no-check-certificate -q -T $t -O- $u) 2>/dev/null
         elif [ -n "$CURL" ];then
-	        p=$($CURL $m -s --connect-timeout $t $u) 2>/dev/null
+	        p=$($CURL $m -k -s --connect-timeout $t $u) 2>/dev/null
         fi
 	fi
 	echo "$p"
