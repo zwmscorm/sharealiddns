@@ -1051,6 +1051,7 @@ _lock(){
 
 _unlocking(){ 
     _lock u $1 
+	echo ""
 	logs "The script is exited." "" "rl" "w"
 	exit 0
 }
