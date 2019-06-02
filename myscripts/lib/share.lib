@@ -1056,12 +1056,13 @@ _unlocking(){
 	exit 0
 }
 
+
 _locking(){
     [ -n "$3" ] && rm -rf "$2" 
 	trap "_unlocking $1" SIGHUP SIGINT SIGQUIT SIGTERM  
 	local f= `which flock`;local e=`which exec`
 	if [ -n "$f" -a -n "$e" ];then
-            eval "exec $1>\"$2\""
+        eval "exec $1>\"$2\""
 	fi
 }
 
