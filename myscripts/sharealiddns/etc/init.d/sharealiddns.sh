@@ -692,7 +692,7 @@ set_aliddns_conf(){
 		    break
 		elif isEmpty "$v";then
 			echo -e "${INFO}${RB_COLOR}输入值不能为空值, 重输! ${N_COLOR}"
-		elif echo "$v" | grep -q '^[a-zA-Z0-9@*]\+$';then
+		elif echo "$v" | grep -q '^[a-zA-Z0-9@* ]\+$';then
 		    sed -i "s/^${s10}=.*/${s10}=${r}${v}${r}/g" "$s0"	
 			break
 		else
