@@ -99,7 +99,7 @@ FL="/tmp/$scripts_name.lock"
 if isexists "flock" && isexists "exec";then
     xnlock "$FD" "$FL" "$FU" || lock_info "$scripts_sh"
 else
-   [ -n "$FU" ] &&  [ "$(ps | grep -v grep | grep -o $scripts_name | wc -l)" -le 2 ] || lock_info "$scripts_sh"  
+   [ -z "$FU" ] &&  [ "$(ps | grep -v grep | grep -o $scripts_name | wc -l)" -le 2 ] || lock_info "$scripts_sh"  
 fi
 #======================================================================================
 logs "" "$LS"
