@@ -1,4 +1,4 @@
-﻿======================================================================================
+======================================================================================
 脚本说明文档：
 ======================================================================================
 　　sharealiddns脚本是共享的，你可自由下载和使用，但不得用于商业目的，不得转载抄袭，
@@ -157,9 +157,17 @@ option ipv6 '0'
 　　　 耐心等待直至安装完成。
 　　3、在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------
-cd /tmp/ && wget --no-check-certificate -O /tmp/sharealiddns-install.sh https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh
+cd /tmp/ && wget --no-check-certificate https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------
-　　　 接着按提示进行操作：
+　　或者用curl从github下载脚本:
+-----------------------------------------------------分割线下是安装指令----------------------------------------------------------
+cd /tmp/ && curl -k https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh
+-----------------------------------------------------分割线上是安装指令---------------------------------------------------------- 　　
+如果wget和curl都无法下载，可以先将sharealiddns-install.sh单独以web方式下载到本地，用winscp上传到路由器的tmp目录，然后将 
+sharealiddns-install.sh权限提到0755, 在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：
+    sh /tmp/sharealiddns-install.sh　
+	
+    接着按提示进行操作：
 　　4、将脚本安装到nand，则输入nand，将脚本安装到usb，则输入usb，删除脚本，则输入uninstall。
 　　5、接着是设置aliddns.conf参数，请按readme.txt文档中的说明认真填写。
 　　6、稍候脚本会自动运行，请注意观察脚本运行情况。如出现错误，会有提示。
