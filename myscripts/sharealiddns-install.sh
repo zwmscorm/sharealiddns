@@ -1,7 +1,7 @@
 #!/bin/sh
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:$PATH
-TAR=`which tar`;MOUNT=`which mount`;BN=`which basename`;OPENSSL=`which openssl`;
-NSLOOKUP=`which nslookup`;SORT=`which sort`;IP=`which ip`;WGET=`which wget`;OS_TYPE="";PT="";isIPV6=0
+TAR=`which tar`;MOUNT=`which mount`;BN=`which basename`;OPENSSL=`which openssl`;NSLOOKUP=`which nslookup`
+SORT=`which sort`;IP=`which ip`;WGET=`which wget`;CURL=`which curl`;OS_TYPE="";PT="";isIPV6=0
 logs(){
     Y_COLOR="\033[0;33;40m"
     YB_COLOR="\033[1;33;40m"
@@ -73,8 +73,9 @@ do_install(){
 	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip"
 	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me"
 	
+	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM 
+	
 	logs "Going..."
-    trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM  
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
 	    nvram set jffs2_scripts=1
@@ -130,7 +131,7 @@ do_install(){
 			    i=$(($i+1))
 			fi
         done
-        if [ $i == "1" ];then
+        if [ "$i" == "1" ];then
 		    logs "No active partition was found available[找不到可用的活动分区]" 
 			rm -rf "$TAR_GZ"
 	        rm -rf "$TMP_PATH"
@@ -207,8 +208,21 @@ do_install(){
 	logs "Please wait while you download it[正在下载, 请稍候]"
 	rm -rf "$TAR_GZ"
     rm -rf "$TMP_PATH"
-	"$WGET" --no-check-certificate -c -q -O "$TAR_GZ" "$DOWN_URL"
-	if [ $? -eq 0 -a -f "$TAR_GZ" ];then
+	
+	i=1;r=1
+	while [ $i -le 10 ];do
+	    if [ "$r" == "1" -a -n "$WGET" ];then
+	        "$WGET" --no-check-certificate -c -q -O "$TAR_GZ" "$DOWN_URL"
+		    [ $? -eq 0 -a -f "$TAR_GZ" ] && r="0"
+	    fi
+	    if [ "$r" == "1" -a -n "$CURL" ];then	
+	        "$CURL" -k "$DOWN_URL" -o "$TAR_GZ"
+		    [ $? -eq 0 -a -f "$TAR_GZ" ] && r="0"
+        fi	 
+	    [ "$r" == "0" ] && break
+	    i=$((i+1))
+	done
+	if [ "$r" == "0" ];then
 	    logs "Download successful[下载成功]" 
 		"$TAR" -xzf "$TAR_GZ" -C "/tmp/"
 	    if [ $? -ne 0 -o ! -d "$TMP_PATH/myscripts/lib" -o ! -d "$TMP_PATH/myscripts/sharealiddns" ];then
@@ -218,8 +232,9 @@ do_install(){
 		    exit 0
 	    fi
 	else
-	    logs "Download failed. Please check that the network or wget version is too old and GitHub refuses[下载失败, 请检查网络或wget版本是否太旧, 被Github拒绝]" && exit 0
+	    logs "The download failed because of slow network or because HTTPS was rejected by GitHub[下载失败, 因网络慢，或因https被github拒绝]" && exit 0
 	fi
+ 
 	#Install
     mkdir -p "$SCRIPTS_PATH" 
     chmod +x "$SCRIPTS_PATH" 	
@@ -229,20 +244,24 @@ do_install(){
 	elif [ "$INSTALL_PATH" == "usb" ];then
 	    _uninstall_ "nand" 
 	fi
+	
 	cp -af "$TMP_PATH/myscripts/lib" "$SCRIPTS_PATH"
 	cp -af "$TMP_PATH/myscripts/sharealiddns" "$SCRIPTS_PATH"
 	rm -rf "$TAR_GZ"
 	rm -rf "$TMP_PATH"
+	
 	if [ -f "$SCRIPTS_PATH/lib/share.lib" -a -f "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" -a -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ];then
 		chmod +x "$SCRIPTS_PATH/lib/share.lib"
 		chmod +x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh"
 		logs "Successfully install to $SCRIPTS_PATH[成功安装到${SCRIPTS_PATH}]"
-		sh "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf"
+		sleep 3
+		if [ -x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" ];then
+		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf" 2>/dev/null
+		fi
 	else
 		logs "Installation script failed, Please check[安装脚本失败, 请检查]" 
 		rm -rf "$TAR_GZ"
 	    rm -rf "$TMP_PATH"
-		exit 0
 	fi
 }
 
@@ -274,7 +293,7 @@ _uninstall_(){
 			fi
 		    i=$(($i+1))
         done
-		[ "$r" -eq 0 ] && logs "Has been uninstallation[已卸载]"
+		[ "$r" == "0" ] && logs "Has been uninstallation[已卸载]"
 	fi
 	if [ "$OS_TYPE" == "merlin" ];then
 	    for v in "/jffs/scripts/wan-start" "/jffs/scripts/ddns-start" "/jffs/scripts/post-mount";do
