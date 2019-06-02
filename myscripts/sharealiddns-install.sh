@@ -38,11 +38,11 @@ get_os_type(){
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
     fi
 	if [ -n "$OS_TYPE" ];then
-        logs "Your router OS is $OS_TYPE[你的路由器固件是${OS_TYPE}]"
+        logs "Your router Firmware is $OS_TYPE[你的路由器固件是${OS_TYPE}]"
 	    if [ "$isIPV6" == "0" ];then
-	        logs "Firmware is IPV6 enabled[固件已启用IPV6]"
+	        logs "Router is IPV6 enabled[路由器已启用IPV6]"
 	    else
-	        logs "Firmware is IPV6 disabled[固件已禁用IPV6]"
+	        logs "Router is IPV6 disabled[路由器已禁用IPV6]"
 	    fi	
 		sleep 3
 	    logs "Going..."
