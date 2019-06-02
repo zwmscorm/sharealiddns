@@ -40,7 +40,7 @@ option  ipv6  '0'
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------  
 或者用curl从github下载脚本:  
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
-`cd /tmp/ && curl -k https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
+`cd /tmp/ && curl -k https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh -o /tmp/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------  
 　　如果wget和curl都无法下载，可以先将sharealiddns-install.sh单独以web方式下载到本地，用winscp上传到路由器的tmp目录，然后将
             sharealiddns-install.sh权限提到0755, 在xshell或FinalShell命令行窗口中粘贴下面安装脚本指令：  
