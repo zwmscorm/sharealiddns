@@ -13,8 +13,6 @@ logs(){
 }
 
 get_os_type(){
-    clear 
-	logs "Going..."
 	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
 	    OS_TYPE="merlin"
 		[ "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" == "disabled" ] && isIPV6=1
@@ -46,6 +44,8 @@ get_os_type(){
 	    logs "Firmware is IPV6 disabled[固件已禁用IPV6]"
 	fi
 	if [ -n "$OS_TYPE" ];then
+	     clear 
+	     logs "Going..."
 	    return 0
 	else
 	    return 1
