@@ -13,6 +13,7 @@ logs(){
 }
 
 get_os_type(){
+    logs "========>>"
 	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
 	    OS_TYPE="merlin"
 		[ "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" == "disabled" ] && isIPV6=1
@@ -35,17 +36,16 @@ get_os_type(){
 		PT="/etc"
     else
 	    logs "The script does not support this firmware[脚本不支持此固件]" "" "ra" "e"
-		return 1
     fi
-	logs "Your router OS is $OS_TYPE[你的路由器固件是${OS_TYPE}]"
-	if [ "$isIPV6" == "0" ];then
-	    logs "Firmware is IPV6 enabled[固件已启用IPV6]"
-	else
-	    logs "Firmware is IPV6 disabled[固件已禁用IPV6]"
-	fi
 	if [ -n "$OS_TYPE" ];then
-	     clear 
-	     logs "Going..."
+        logs "Your router OS is $OS_TYPE[你的路由器固件是${OS_TYPE}]"
+	    if [ "$isIPV6" == "0" ];then
+	        logs "Firmware is IPV6 enabled[固件已启用IPV6]"
+	    else
+	        logs "Firmware is IPV6 disabled[固件已禁用IPV6]"
+	    fi	
+		sleep 3
+	    logs "Going..."
 	    return 0
 	else
 	    return 1
@@ -75,7 +75,7 @@ do_install(){
 	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip http://whatismyip.akamai.com http://ipv4.myip.dk/api/info/IPv4Address"
 	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.yunohost.org"
 	
-	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM 
+	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';logs '<<========';exit" SIGHUP SIGINT SIGQUIT SIGTERM 
 	
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
@@ -255,6 +255,7 @@ do_install(){
 		chmod +x "$SCRIPTS_PATH/lib/share.lib"
 		chmod +x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh"
 		logs "Successfully install to $SCRIPTS_PATH[成功安装到${SCRIPTS_PATH}]"
+		logs "<<========"
 		sleep 3
 		if [ -x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" ];then
 		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf" 2>/dev/null
@@ -264,6 +265,7 @@ do_install(){
 		rm -rf "$TAR_GZ"
 	    rm -rf "$TMP_PATH"
 	fi
+	logs "<<========"
 }
 
 _uninstall_(){
