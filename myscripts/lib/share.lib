@@ -1061,14 +1061,7 @@ _locking(){
 	trap "_unlocking $1" SIGHUP SIGINT SIGQUIT SIGTERM  
 	local f= `which flock`;local e=`which exec`
 	if [ -n "$f" -a -n "$e" ];then
-        eval "exec $1>\"$2\""
-	else
-	    local h=$(echo $2 | sed 's/.lock//g' | awk -F '/' '{print $NF}')
-		local n=$(ps  | grep -o $h | wc -l)
-		if [ "$n" -gt 3 > /dev/null ];then
-		    logs "The script is running or locked, exit." "" "rl" "w"
-			exit 0
-		fi
+            eval "exec $1>\"$2\""
 	fi
 }
 
