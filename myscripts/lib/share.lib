@@ -1043,20 +1043,23 @@ check_shellproc(){
 }
 
 _lock(){  
-    if [ -n $(which flock) -a -n $(which exec) ];then
+    local f= `which flock`;local e=`which exec`
+    if [ -n "$f" -a -n "$e" ];then
         flock -$1 $2 
 	fi
 }
 
 _unlocking(){ 
     _lock u $1 
+	logs "The script is exited." "" "rl" "w"
 	exit 0
 }
 
 _locking(){
-    [ -n "$3" ] && rm -f $2 
+    [ -n "$3" ] && rm -rf "$2" 
 	trap "_unlocking $1" SIGHUP SIGINT SIGQUIT SIGTERM  
-	if [ -n `which flock` ] && [ -n `which exec` ];then
+	local f= `which flock`;local e=`which exec`
+	if [ -n "$f" -a -n "$e" ];then
         eval "exec $1>\"$2\""
 	else
 	    local SH=$(echo $2 | sed 's/.lock//g' | awk -F '/' '{print $NF}')
