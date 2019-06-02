@@ -1063,8 +1063,9 @@ _locking(){
 	if [ -n "$f" -a -n "$e" ];then
         eval "exec $1>\"$2\""
 	else
-	    local SH=$(echo $2 | sed 's/.lock//g' | awk -F '/' '{print $NF}')
-		if check_shellproc "$SH";then
+	    local h=$(echo $2 | sed 's/.lock//g' | awk -F '/' '{print $NF}')
+		local n=$(ps  | grep -o $h | wc -l)
+		if [ "$n" -gt 3 > /dev/null ];then
 		    logs "The script is running or locked, exit." "" "rl" "w"
 			exit 0
 		fi
