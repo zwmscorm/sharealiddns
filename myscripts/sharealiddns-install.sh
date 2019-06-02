@@ -187,7 +187,7 @@ do_install(){
 	    fi
 	fi
 	for u in $u4;do
-	    p4=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	    p4=$($WGET --no-check-certificate -T 30 -O- $u) 2>/dev/null
 	    [ -n "$p4" ] && break   
 	done
 	if [ -z "$p4" ];then
@@ -196,7 +196,7 @@ do_install(){
 	fi
 	if [ "$isIPV6" == "0" ];then
 	    for u in $u6;do
-	        p6=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	        p6=$($WGET --no-check-certificate -T 30 -O- $u) 2>/dev/null
 	        [ -n "$p6" ] && break   
 	    done
 		if [ -z "$p6" ];then
