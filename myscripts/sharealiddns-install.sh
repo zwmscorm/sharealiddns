@@ -13,8 +13,8 @@ logs(){
 }
 
 get_os_type(){
-        clear
-        logs "Going..."
+    clear 
+	logs "Going..."
 	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
 	    OS_TYPE="merlin"
 		[ "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" == "disabled" ] && isIPV6=1
