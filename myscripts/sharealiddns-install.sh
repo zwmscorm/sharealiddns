@@ -70,8 +70,8 @@ do_install(){
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
 	local i=1;local m="";local s="";local l="";local n=0;local r="";local p4="";local p6=""
-	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip"
-	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me"
+	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip http://whatismyip.akamai.com http://ipv4.myip.dk/api/info/IPv4Address"
+	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.yunohost.org"
 	
 	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM 
 	
@@ -131,7 +131,7 @@ do_install(){
 			    i=$(($i+1))
 			fi
         done
-        if [ "$i" == "1" ];then
+        if [ "$i" -eq 1 ];then
 		    logs "No active partition was found available[找不到可用的活动分区]" 
 			rm -rf "$TAR_GZ"
 	        rm -rf "$TMP_PATH"
@@ -182,34 +182,34 @@ do_install(){
 	    if [ $? -eq 0 -a -n "$r" ];then
 	        r=""
 	    else
-			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
+			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]"
 			exit 0
 	    fi
 	fi
+	r="1"
 	for u in $u4;do
-	    p4=$($WGET --no-check-certificate -T 30 -O- $u) 2>/dev/null
-	    [ -n "$p4" ] && break   
+	    p4=$($WGET --no-check-certificate -q -T 10 -O- $u) 2>/dev/null
+	    [ $? -eq 0 -a -n "$p4" ] && r="0" && break   
 	done
-	if [ -z "$p4" ];then
+	if [ "$r" != "0" ];then
 	    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
 		exit 0
 	fi
+	r="1"
 	if [ "$isIPV6" == "0" ];then
 	    for u in $u6;do
-	        p6=$($WGET --no-check-certificate -T 30 -O- $u) 2>/dev/null
-	        [ -n "$p6" ] && break   
+	        p6=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
+	        [ $? -eq 0 -a -n "$p6" ] && r="0" && break    
 	    done
-		if [ -z "$p6" ];then
+		if [ "$r" != "0" ];then
 		    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
 	    fi
 	fi
-	
 	#Download and tar
 	logs "Please wait while you download it[正在下载, 请稍候]"
 	rm -rf "$TAR_GZ"
     rm -rf "$TMP_PATH"
-	
-	i=1;r=1
+	i=1;r="1"
 	while [ $i -le 10 ];do
 	    if [ "$r" == "1" -a -n "$WGET" ];then
 	        "$WGET" --no-check-certificate -c -q -O "$TAR_GZ" "$DOWN_URL"
