@@ -266,7 +266,7 @@ get_ip_curl(){
 	local u="$1";local t="$2";local m="$3";local wp=""
 	isEmpty "$t" && t=30
 	if [ -n "$CURL" -a -n "$u" ];then
-	    p=$($CURL -s --connect-timeout $t $u) 2>/dev/null
+	    p=$($CURL -k -s --connect-timeout $t $u) 2>/dev/null
 		if iseq $? 0;then
 			if iseq "$m" "ipv4";then
 				public_ipv4_check "$p" && wp="$p" 
