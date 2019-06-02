@@ -13,6 +13,8 @@ logs(){
 }
 
 get_os_type(){
+        clear
+        logs "Going..."
 	if $(uname -a | tr 'A-Z' 'a-z' | grep -q 'merlin') && [ -d "/jffs" ] ;then
 	    OS_TYPE="merlin"
 		[ "$(nvram get ipv6_service | tr 'A-Z' 'a-z')" == "disabled" ] && isIPV6=1
@@ -75,7 +77,6 @@ do_install(){
 	
 	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';exit" SIGHUP SIGINT SIGQUIT SIGTERM 
 	
-	logs "Going..."
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
 	    nvram set jffs2_scripts=1
