@@ -258,7 +258,7 @@ do_install(){
 		logs "<<========"
 		sleep 3
 		if [ -x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" ];then
-		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf" 2>/dev/null
+		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf_unlock" 2>/dev/null
 		fi
 	else
 		logs "Installation script failed, Please check[安装脚本失败, 请检查]" 
