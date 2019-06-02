@@ -38,7 +38,7 @@ option  ipv6  '0'
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
 `cd /tmp/ && wget --no-check-certificate https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh -O /tmp/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------  
-或者用curl从github下载脚本:  
+如果固件有curl, 也可以用curl下载脚本:  
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
 `cd /tmp/ && curl -k https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh -o /tmp/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------  
