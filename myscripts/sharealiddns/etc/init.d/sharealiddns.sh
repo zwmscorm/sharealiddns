@@ -96,10 +96,11 @@ ARGS1=$(echo $1 | awk -F '_' '{print $1}')
 FU=$(echo $1 | awk -F '_' '{print $2}')
 FD=100
 FL="/tmp/$scripts_name.lock" 
+FN=$(ps | grep -v grep | grep -o $scripts_name | wc -l)
 if isexists "flock" && isexists "exec";then
     xnlock "$FD" "$FL" "$FU" || lock_info "$scripts_sh"
 elif [ -z "$FU" ];then
-    [ "$(ps | grep -v grep | grep -o $scripts_name | wc -l)" -le 2 ] || lock_info "$scripts_sh"  
+    [ "$FN" -le 2 ] || lock_info "$scripts_sh"  
 fi
 #======================================================================================
 logs "" "$LS"
