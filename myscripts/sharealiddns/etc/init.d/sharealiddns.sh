@@ -1987,10 +1987,28 @@ find_wan_info(){
 		wan_ifname="ppp0"
 		return 0
 	elif iseq "$OS_TYPE" "pandorabox" || iseq "$OS_TYPE" "openwrt";then
-	    proto=$(uci -P /var/state get network.wan.proto)
-	    wan_proto="$proto"
-		wan_ifname=$(uci -P /var/state get network.wan.ifname)
-		wan_no=""
+	   local p="";local u=""
+	   for w in wan wan6;do
+		    {
+		        p=$(uci get network.${w}.proto) 
+			    u=$(uci get network.${w}.username)
+			} 2>/dev/null
+            if [ "$p" == "pppoe" -a -n "$u" ];then	
+			    proto="$p"
+                wan_proto="$proto"
+				wan_ifname="pppoe-${w}"
+				if iseq "$w" "wan";then
+				    wan_no=""
+				elif iseq "$w" "wan";then
+				    wan_no="6"
+				fi
+                break
+		    fi
+		done
+	    #proto=$(uci -P /var/state get network.wan.proto)
+	    #wan_proto="$proto"
+		#wan_ifname=$(uci -P /var/state get network.wan.ifname)
+		#wan_no=""
 		return 0
 	fi
 	return 1
@@ -2961,12 +2979,24 @@ do_init(){
 	    ETH="br0"
 		isEmpty "$(nvram get ip6_service | tr 'A-Z' 'a-z')" && isIPV6=1
 	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then 
-	    r=$(uci get network.wan.keepalive) 2>/dev/null
-        if isEmpty "$r";then
-            uci set network.wan.keepalive='3 5'
-            uci commit   
+	    r="1"
+	    for w in wan wan6;do
+		    {
+		        local p=$(uci get network.${w}.proto) 
+			    local u=$(uci get network.${w}.username)
+			    local k=$(uci get network.${w}.keepalive)
+			} 2>/dev/null
+            if [ "$p" == "pppoe" -a -n "$u" ];then	
+                if isEmpty "$k";then
+                    uci set network.${w}.keepalive='3 5'
+                    r="0" 
+                fi
+		    fi
+		done
+		if iseq "$r" 0;then
+		    uci commit  				
             /etc/init.d/network restart 
-        fi
+	    fi
 	    cron_File=$(ls /etc/crontabs) 
 	    if [ -n "/etc/crontabs/$cron_File" ];then
 	        cron_File="/etc/crontabs/$cron_File"
