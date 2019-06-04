@@ -239,13 +239,14 @@ do_install(){
 	#Install
     mkdir -p "$SCRIPTS_PATH" 
     chmod +x "$SCRIPTS_PATH" 	
-	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup"
+	
 	if [ "$INSTALL_PATH" == "nand" ];then
 	    _uninstall_ "usb" 
 	elif [ "$INSTALL_PATH" == "usb" ];then
 	    _uninstall_ "nand" 
 	fi
 	
+	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup"
 	cp -af "$TMP_PATH/myscripts/lib" "$SCRIPTS_PATH"
 	cp -af "$TMP_PATH/myscripts/sharealiddns" "$SCRIPTS_PATH"
 	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf"
