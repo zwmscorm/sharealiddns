@@ -1004,32 +1004,6 @@ get_basename(){
     echo $(basename $(echo "$1" | awk -F ' ' '{print $1}') | awk -F '.' '{print $1}')
 }
 
-shellprocess(){
-    local v1=$(echo $1 | awk -F '.' '{print $1}')        > /dev/null 
-	local v2=$(basename $2 | awk -F '.' '{print $1}')    > /dev/null 
-	local v3=$(ps | grep -wn $v1 | grep -v grep | wc -l) > /dev/null 
-	#echo $(ps | grep -wn $v1 | grep -v grep)
-	#echo "$v1  $v2  $v3"
-	[ -z "$v1" ] || [ "$v3" -eq 0 ] && logs "The script is not running..." "" "vb" && return 1
-	if [ "$v1" == "$v2" ];then
-		if [ "$v3" -ge 3 ];then
-            logs "The script is running..." "" "vb" 
-			return 0
-		else
-		    logs "The script is not running..." "" "vb" 
-			return 1
-        fi	
-    else	
-        if [ "$v3" -ge 1 ];then
-            logs "The script is running..." "" "vb" 
-			return 0
-		else
-		    logs "The script is not running..." "" "vb" 
-			return 1
-        fi		
-	fi
-}
-
 check_shellproc(){
     local s="$1"
 	[ -z "$s" ] && return 0
