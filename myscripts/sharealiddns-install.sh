@@ -248,6 +248,8 @@ do_install(){
 	
 	cp -af "$TMP_PATH/myscripts/lib" "$SCRIPTS_PATH"
 	cp -af "$TMP_PATH/myscripts/sharealiddns" "$SCRIPTS_PATH"
+	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf"
+	
 	rm -rf "$TAR_GZ"
 	rm -rf "$TMP_PATH"
 	
