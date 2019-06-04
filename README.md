@@ -34,7 +34,7 @@ option  ipv6  '0'
        　　　  如只安装或升级wget，则粘贴下面的指令：  
        　　　  `opkg update && opkg install wget`  
        　　　  耐心等待直至安装完成。     
-       　　3、拷贝下面的安装脚本指令并粘贴到xshell或FinalShell命令行窗口中：   
+       　　3、拷贝下面的安装脚本指令并粘贴到xshell或FinalShell命令行窗口中，回车：   
 -----------------------------------------------------分割线下是安装指令----------------------------------------------------------  
 `cd /tmp/ && wget --no-check-certificate https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns-install.sh -O /tmp/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
 -----------------------------------------------------分割线上是安装指令----------------------------------------------------------  
