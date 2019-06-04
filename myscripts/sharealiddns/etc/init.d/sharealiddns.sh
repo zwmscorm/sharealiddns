@@ -2944,7 +2944,7 @@ do_wan_state_check(){
 #======================================================================================
 do_init(){
     if [ "$2" != "setconf" -a "$2" != "start" -a "$2" != "stop" -a "$2" != "restart" -a "$2" != "check" -a "$2" != "update" -a "$2" != "again" -a "$2" != "add" -a "$2" != "removeall" -a "$2" != "remove" -a "$2" != "status" -a "$2" != "monitor" -a "$2" != "checkwanip" -a "$2" != "showlog" -a "$2" != "kill" -a "$2" != "client" ];then
-        logs "Usage: $1 {setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client}" "" "yb" "w" >&2
+        logs "Usage: $1 setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client" "" "yb" "w" >&2
         exit 0
     fi
 	local i=1;local j=30;local r=""
