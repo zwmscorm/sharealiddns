@@ -94,14 +94,11 @@ fi
 ARGS0="$0";ARGS2="$2";ARGS3="$3";ARGS4="$4";LS="$logsplit"
 #======================================================================================
 ARGS1=$(echo $1 | awk -F '_' '{print $1}')
-FU=$(echo $1 | awk -F '_' '{print $2}')
-FD=100
-FL="/tmp/$scripts_name.lock" 
-FN=$(ps | grep -v grep | grep -o $scripts_name | wc -l)
-if isexists "flock" && isexists "exec";then
-    xnlock "$FD" "$FL" "$FU" || lock_info "$scripts_sh"
-elif [ -z "$FU" ];then
-    [ "$FN" -le 2 ] || lock_info "$scripts_sh"  
+FU=$(echo $1 | awk -F '_' '{print $2}');FL="/tmp/$scripts_name.lock";FS="$scripts_sh";FD=100
+if isexists "flock";then
+    xnlock "$FD" "$FL" "$FS" "$FU" || lock_info "$FS"
+else
+    fflock "$FD" "$FL" "$FS" "$FU" || lock_info "$FS"
 fi
 #======================================================================================
 logs "" "$LS"
@@ -2339,6 +2336,7 @@ do_realupdate(){
     set_cron "$1" "$2" "$3"
 	set_scripts "$1" "$2" "$3"
 	do_end
+	rm -rf "$FL"
 }
 #======================================================================================
 do_aliddns_log(){
@@ -3234,6 +3232,7 @@ do_begin(){
             *)
         esac
     fi
+	rm -rf "$FL"
 	exit 0
 }
 #======================================================================================

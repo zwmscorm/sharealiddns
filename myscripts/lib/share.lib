@@ -1041,52 +1041,62 @@ check_shellproc(){
 }
 
 _lock(){  
-    local f= `which flock`;local e=`which exec`
-    if [ -n "$f" -a -n "$e" ];then
-        flock -$1 $2 
-	fi
+    flock -$1 $2 
 }
 
 _unlocking(){ 
     _lock u $1 
-	echo ""
-	logs "The script is exited." "" "rl" "w"
-	exit 0
+	rm -rf $2 
+	ulock_info $3
 }
 
-
 _locking(){
-    [ -n "$3" ] && rm -rf "$2" 
-	trap "_unlocking $1" SIGHUP SIGINT SIGQUIT SIGTERM  
-	local f= `which flock`;local e=`which exec`
-	if [ -n "$f" -a -n "$e" ];then
-        eval "exec $1>\"$2\""
-	fi
+    [ -n "$4" ] && rm -rf "$2" 
+	trap "_unlocking $1 $2 $3 $4" SIGHUP SIGINT SIGQUIT SIGTERM
+    eval "exec $1>\"$2\""
 }
 
 xnlock(){
-	_locking $1 $2 $3
+	_locking $1 $2 $3 $4
     _lock xn $1
 }  
 
 xlock(){ 
-	_locking $1 $2 $3
+	_locking $1 $2 $3 $4
     _lock x $1 
 }
    
 slock(){
-	_locking $1 $2 $3
+	_locking $1 $2 $3 $4
     _lock s $1
 }
    
 ulock(){
-	_locking $1 $2 $3
+	_locking $1 $2 $3 $4
     _lock u $1
 }
 
 lock_info(){
-    logs "$1 is running or locked, exit." "" "rl" "w"
+    echo ""
+    logs "$1 is running or locked." "" "rl" "w"
     exit 0
+}
+
+ulock_info(){
+    echo ""
+    logs "$1 is exited." "" "rl" "w"
+	exit 0
+}
+
+fflock (){
+    [ -n "$4" ] && rm -rf "$2" 
+    trap "rm -rf $2;ulock_info $3" SIGHUP SIGINT SIGQUIT SIGTERM 
+	if [ ! -f "$2" ];then
+	    echo "$1" > "$2"
+		return 0
+	else
+	    return 1
+	fi
 }
 
 check_url(){
