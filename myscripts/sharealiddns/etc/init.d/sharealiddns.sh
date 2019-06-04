@@ -227,6 +227,11 @@ ETH=""
 isIPV6=0
 isRUN=0
 #======================================================================================
+do_exit(){
+    rm -rf "$FL"
+    exit 0
+}
+#======================================================================================
 get_url_cmd(){
     local u="$1";local t="$2";local m="$3";local p=""
 	if iseq "$m" "ipv4";then
@@ -927,7 +932,7 @@ get_Record(){
 	Record_domain="";Record_Status="";Record_type="";Record_Locked="";Record_ttl="";num_getRecord=1  
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
-		exit 0
+		do_exit
 	fi
 	until [ "$num_getRecord" -gt "$jk" ];do 
 		if isNotEmpty "$aliddns_url_ok";then
@@ -970,7 +975,7 @@ get_Record(){
 			    logs "aliddns_AccessKeyId and aliddns_AccessKeySecret are correct and valid." "" "ra" "e"
 			    logs "获取阿里云域名记录失败, 检查您的域名是否通过审核," "" "ra" "e"
 			    logs "aliddns-accesskeyid和aliddns-accesskeysecret是否正确有效。" "" "ra" "e" 
-			    exit 0
+			    do_exit
 			fi
         fi
         num_getRecord=$(sadd $num_getRecord 1)		
@@ -1028,7 +1033,7 @@ get_Record(){
 	done
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File"  "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
-		exit 0
+		do_exit
 	fi
     if iseq "$r" 1;then
         return 0
@@ -1187,7 +1192,7 @@ aliddns_domain_api(){
 	local SE=$(aliddns_encode '/')
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
-		exit 0
+		do_exit
 	fi
 	UR="${UR}AccessKeyId=${KI}"
 	UR="${UR}${SP}Format=json"
@@ -2061,7 +2066,7 @@ get_wan_ipv46(){
 	iseq "$aliddns_type" "AAAA" && k="-6" && xIP="ipv6_IP" && xan_ipvx_IP="wan_$xIP"
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
-		exit 0
+		do_exit
 	fi
 	#get internal Public IP
     if iseq "$wan_ifname" "";then
@@ -2242,7 +2247,7 @@ do_nslookup_check(){
 	nslookup_ipvx="";isdnsExist="false"
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"
-		exit 0
+		do_exit
 	fi
 	logs "$Count:[$aliddns_type]-[$name"."$domain]-public_dns[$nslookup_dns] Use nslookup check." "" "vl"	
 	logs "Getting the parsed IP address from nslookup can take a long time. Please wait patiently..." "" "vl" "w" 
@@ -2328,7 +2333,7 @@ set_scripts(){
 do_end(){
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
-		exit 0
+		do_exit
 	fi
 }
 #======================================================================================
@@ -2465,7 +2470,7 @@ show_success(){
     local again_num=0;local m="";local msg="";local n=0;local i=1
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
-		exit 0
+		do_exit
 	fi
 	logs "" "$LS"
 	if isne "$currtimer" 0;then
@@ -2572,7 +2577,7 @@ do_client(){
     else
         logs "Usage of ipv4:[sh $scripts_sh $1 ipv4]" "" "rb" "w"
 		logs "Usage of ipv6:[sh $scripts_sh $1 ipv6]" "" "rb" "w"
-		exit 0
+		do_exit
    fi
    while :;do
         ii=1
@@ -2581,7 +2586,7 @@ do_client(){
 		ml=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $3}')
 		sl=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $4}')
 		nn=$(echo "$pl" | awk 'END{print NR}')
-		[ -z "$pl" ] && logs "No client was found[没有发现客户端]" "" "yb" && exit 0
+		[ -z "$pl" ] && logs "No client was found[没有发现客户端]" "" "yb" && do_exit
 		until [ "$ii" -gt "$nn" ];do 
 		    p=$(echo "$pl" | awk "NR==$ii{print}")
 			m=$(echo "$ml" | awk "NR==$ii{print}")
@@ -2900,7 +2905,7 @@ get_externalIP(){
 	logs "    1、路由器或光猫设置是否正确。" "" "ra" "w"
 	logs "    2、通信运营商是否推送IPV6 IP。" "" "ra" "w"
 	logs "    3、其他未知原因导致无法探测到IPV6 IP。" "" "ra" "w"
-	exit 0
+	do_exit
 }
 #======================================================================================
 do_run_check(){
@@ -2945,7 +2950,7 @@ do_wan_state_check(){
 do_init(){
     if [ "$2" != "setconf" -a "$2" != "start" -a "$2" != "stop" -a "$2" != "restart" -a "$2" != "check" -a "$2" != "update" -a "$2" != "again" -a "$2" != "add" -a "$2" != "removeall" -a "$2" != "remove" -a "$2" != "status" -a "$2" != "monitor" -a "$2" != "checkwanip" -a "$2" != "showlog" -a "$2" != "kill" -a "$2" != "client" ];then
         logs "Usage: $1 setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client" "" "yb" "w" >&2
-        exit 0
+       do_exit
     fi
 	local i=1;local j=30;local r=""
 	
@@ -3011,7 +3016,7 @@ do_init(){
 		logs "$SORT exists=0" "" "y" 
     else
 	    logs "You have to install sort[你必须安装sort]" "" "rb" "e" 
-		exit 0
+		do_exit
 	fi
 	
 	if isexists "nslookup";then
@@ -3019,7 +3024,7 @@ do_init(){
 		logs "$NSLOOKUP exists=0" "" "y" 
 	else
 	    logs "You have to install nslookup[你必须安装nslookup]" "" "rb" "e" 
-		exit 0
+		do_exit
 	fi
 	
 	if isexists "/usr/bin/openssl";then
@@ -3034,7 +3039,7 @@ do_init(){
 		OPENSSL="$existspath"
 	else
 	    logs "You have to install openssl[你必须安装openssl]" "" "rb" "e" 
-		exit 0
+		do_exit
 	fi
 	
 	if [ -n "$OPENSSL" ];then
@@ -3043,7 +3048,7 @@ do_init(){
 	        logs "$OPENSSL exists=0" "" "y" 
 	    else
 			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
-			exit 0
+			do_exit
 	    fi
 	fi
 	
@@ -3064,7 +3069,7 @@ do_init(){
 		logs "$IP2 exists=0" "" "y" 
 	else
 		logs "You have to install ip[你必须安装ip]" "" "rb" "e" 
-		exit 0
+		do_exit
 	fi
 	
     if isexists "/usr/bin/wget";then
@@ -3117,7 +3122,7 @@ do_init(){
 
 	if isEmpty "$WGET" && isEmpty "$CURL";then
 	    logs "You have to install wget or curl[你必须安装wget或curl]" "" "rb" "e" 
-		exit 0
+		do_exit
 	fi
 	
 	if iseq "$OS_TYPE" "merlin" || iseq "$OS_TYPE" "padavan";then
@@ -3128,24 +3133,24 @@ do_init(){
             else
 		        logs "Low-level error: USB partition volume label must be set to English or numeric, and the total number must exceed 4 digits." "" "ra" "e"
 	            logs "低级错误：USB分区卷标必须设置为英文或数字，而且总数必须超过4位！" "" "ra" "e"	
-                exit 0			
+                do_exit		
             fi
         fi
 	fi
     
 	if [ "$2" == "setconf" ];then
 	    set_aliddns_conf
-        exit 0
+        do_exit
     fi
 	
 	if iseq "$2" "showlog";then
 	    do_showlog 
-		exit 0
+		do_exit
 	fi
 	
     if [ ! -f "$aliddns_conf" ];then
         logs "No configuration file [account.conf] can be found, exit." "" "rb" "e"
-	    exit 0
+	    do_exit
     fi
 	
 	mkdir -p "$aliddns_root/conf" 
@@ -3235,7 +3240,6 @@ do_begin(){
 }
 #======================================================================================
 do_begin "$ARGS0" "$ARGS1" "$ARGS2" "$ARGS3" 
-rm -rf "$FL"
-exit 0
+do_exit
 #======================================================================================
 #======================================================================================
