@@ -328,12 +328,12 @@ _uninstall_(){
 			_rmspacerowfile_     "/etc/storage/post_wan_script.sh"
 		fi
 	elif [ "$OS_TYPE" == "openwrt" -o "$OS_TYPE" == "pandorabox" ];then
-	    for f in `ls /etc/hotplug.d/iface/* | grep -E '99-sharealiddns'`;do
+	    for f in `ls /etc/hotplug.d/iface/99-sharealiddns* | grep -E '99-sharealiddns'`;do
             if [ -f "$f" ];then
                 rm -rf "$f"
             fi
         done   
-		for f in `ls /etc/init.d/* | grep -E 'sharealiddns'`;do
+		for f in `ls /etc/init.d/sharealiddns* | grep -E 'sharealiddns'`;do
             if [ -f "$f" ];then
                 rm -rf "$f"
             fi

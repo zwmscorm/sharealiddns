@@ -281,6 +281,15 @@ GETROWNO(){
     fi
 }
 
+del_tmpfile(){
+    local p="$1";local n="$2"
+    for f in `ls $p/$n* | grep -E $n`;do
+        if [ -f "$f" -a "$f" != "$p/$n" ];then
+			rm -rf "$f"
+        fi
+    done
+}
+
 urlencode() {
     while read -n1 v;do 
         case $v in

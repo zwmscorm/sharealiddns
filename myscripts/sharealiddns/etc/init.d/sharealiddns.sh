@@ -2321,6 +2321,8 @@ set_scripts(){
 		fi	
 	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then
 	    if iseq "$1" "a";then
+		    del_tmpfile "/etc/hotplug.d/iface" "99-sharealiddns"
+			del_tmpfile "/etc/init.d" "sharealiddns"
 		    do_create_scripts "a" "/etc/hotplug.d/iface/99-sharealiddns" "$scripts_sh"	
 			do_create_scripts "a" "/etc/init.d/sharealiddns" "$scripts_sh"	
 		elif iseq "$1" "d";then	
@@ -2716,13 +2718,13 @@ do_create_scripts(){
 			elif iseq "$myscripts" "/jffs/scripts/wan-start";then 
 			    RMCURROWTOLISTFILE "$myscripts" "myshell" 14
 			elif iseq "$myscripts" "/etc/hotplug.d/iface/99-sharealiddns";then 
-				for f in `ls /etc/hotplug.d/iface/* | grep -E '99-sharealiddns'`;do
+				for f in `ls /etc/hotplug.d/iface/99-sharealiddns* | grep -E '99-sharealiddns'`;do
                     if [ -f "$f" ];then
                         rm -rf "$f"
                     fi
                 done
 			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then			
-				for f in `ls /etc/init.d/* | grep -E 'sharealiddns'`;do
+				for f in `ls /etc/init.d/sharealiddns* | grep -E 'sharealiddns'`;do
                     if [ -f "$f" ];then
                         rm -rf "$f"
                     fi
@@ -3164,6 +3166,7 @@ do_init(){
 	
 	mkdir -p "$aliddns_root/conf" 
     mkdir -p "$aliddns_root/log"  
+	del_tmpfile "$aliddns_root/conf" "aliddns.conf"
 	
 	if iseq "$OS_TYPE" "merlin" || iseq "$OS_TYPE" "padavan";then
         for s in "/tmp/syslog.log" "/tmp/syslog.log-1" "/jffs/syslog.log" "/jffs/syslog.log-1";do
