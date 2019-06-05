@@ -1014,6 +1014,10 @@ check_shellproc(){
 	fi
 }
 
+_dellockfile(){
+    rm -rf "$1" 
+}
+
 _lock(){  
     flock -$1 $2 
 }
@@ -1024,8 +1028,8 @@ _unlocking(){
 }
 
 _locking(){
-    [ -n "$4" ] && rm -rf "$2" 
-	trap "rm -rf $2;_unlocking $1 $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
+    [ -n "$4" ] && _dellockfile "$2" 
+	trap "_dellockfile $2;_unlocking $1 $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
     eval "exec $1>\"$2\""
 }
 
@@ -1067,8 +1071,8 @@ ulock_info(){
 }
 
 fflock (){
-    [ -n "$4" ] && rm -rf "$2" 
-    trap "rm -rf $2;ulock_info $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
+    [ -n "$4" ] && _dellockfile "$2" 
+    trap "_dellockfile $2;ulock_info $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
 	if [ ! -f "$2" ];then
 	    echo "$1" > "$2"
 		return 0
