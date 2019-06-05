@@ -1025,7 +1025,7 @@ _unlocking(){
 
 _locking(){
     [ -n "$4" ] && rm -rf "$2" 
-	trap "_unlocking $1 $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM EXIT
+	trap "rm -rf $2;_unlocking $1 $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
     eval "exec $1>\"$2\""
 }
 
@@ -1055,8 +1055,7 @@ lock_info(){
 }
 
 ulock_info(){
-    if [ -f "$1" ];then
-	    rm -rf "$1" 
+    if [ ! -f "$1" ];then
 	    echo ""
 	    if [ -z "$2" ];then
             logs "The script has exited." "" "rl" "w"
@@ -1069,7 +1068,7 @@ ulock_info(){
 
 fflock (){
     [ -n "$4" ] && rm -rf "$2" 
-    trap "ulock_info $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM EXIT
+    trap "rm -rf $2;ulock_info $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
 	if [ ! -f "$2" ];then
 	    echo "$1" > "$2"
 		return 0
