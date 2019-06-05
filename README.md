@@ -25,7 +25,7 @@
 option  ipv6  '0'  
 重启，使设置生效。**   
   # [更多说明请点击此处参看脚本说明文档readme.txt](https://github.com/zwmscorm/sharealiddns/blob/master/myscripts/sharealiddns/readme/readme.txt)       
-  ***脚本不定时更新，请多关注！***  
+  ***脚本不定时更新和完善，请多关注！***  
   ## 安装方法：         
 　　**1、准备好winscp和xshell工具软件，如国产FinalShell免费版软件。            
        　　2、要求固件的wget必须支持https，如不支持，必须升级，否则无法从github下载脚本和运行本脚本。      
