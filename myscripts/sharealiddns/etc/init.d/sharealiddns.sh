@@ -2321,8 +2321,8 @@ set_scripts(){
 		fi	
 	elif iseq "$OS_TYPE" "openwrt" || iseq "$OS_TYPE" "pandorabox";then
 	    if iseq "$1" "a";then
-		    del_tmpfile "/etc/hotplug.d/iface" "99-sharealiddns"
-			del_tmpfile "/etc/init.d" "sharealiddns"
+		    del_tmpfile "/etc/hotplug.d/iface" "99-sharealiddns" 2>/dev/null
+			del_tmpfile "/etc/init.d" "sharealiddns" 2>/dev/null
 		    do_create_scripts "a" "/etc/hotplug.d/iface/99-sharealiddns" "$scripts_sh"	
 			do_create_scripts "a" "/etc/init.d/sharealiddns" "$scripts_sh"	
 		elif iseq "$1" "d";then	
@@ -3166,7 +3166,7 @@ do_init(){
 	
 	mkdir -p "$aliddns_root/conf" 
     mkdir -p "$aliddns_root/log"  
-	del_tmpfile "$aliddns_root/conf" "aliddns.conf"
+	del_tmpfile "$aliddns_root/conf" "aliddns.conf" 2>/dev/null
 	
 	if iseq "$OS_TYPE" "merlin" || iseq "$OS_TYPE" "padavan";then
         for s in "/tmp/syslog.log" "/tmp/syslog.log-1" "/jffs/syslog.log" "/jffs/syslog.log-1";do
