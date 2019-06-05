@@ -2709,15 +2709,24 @@ do_create_scripts(){
     elif iseq "$mymode" "d";then
 	    RMSPACEKEYFILE "$myscripts"	"myshell"		
 	    RMSPACEROWFILE "$myscripts"
+		
         if [ -f "$myscripts" ];then
 		    if iseq "$myscripts" "/etc/storage/post_wan_script.sh";then	 
 	            RMCURROWTOLISTFILE "$myscripts" "myshell" 14
 			elif iseq "$myscripts" "/jffs/scripts/wan-start";then 
 			    RMCURROWTOLISTFILE "$myscripts" "myshell" 14
 			elif iseq "$myscripts" "/etc/hotplug.d/iface/99-sharealiddns";then 
-			    rm -rf "$myscripts"
-			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then 
-			    rm -rf "$myscripts"	
+				for f in `ls /etc/hotplug.d/iface/* | grep -E '99-sharealiddns'`;do
+                    if [ -f "$f" ];then
+                        rm -rf "$f"
+                    fi
+                done
+			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then			
+				for f in `ls /etc/init.d/* | grep -E 'sharealiddns'`;do
+                    if [ -f "$f" ];then
+                        rm -rf "$f"
+                    fi
+                done
 			else
 			    RMROWFILE "$myscripts" "myshell"
 				RMROWFILE "$myscripts" "myshellname"
