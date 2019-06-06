@@ -283,7 +283,7 @@ GETROWNO(){
 
 del_tmpfile(){
     local p="$1";local n="$2"
-    for f in `ls $p/$n* | grep -E $n`;do
+    for f in `ls $p/$n* 2>&1 | grep -E $n`;do
         if [ -f "$f" -a "$f" != "$p/$n" ];then
 			rm -rf "$f"
         fi

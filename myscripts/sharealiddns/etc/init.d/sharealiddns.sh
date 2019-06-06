@@ -2722,13 +2722,13 @@ do_create_scripts(){
 			elif iseq "$myscripts" "/jffs/scripts/wan-start";then 
 			    RMCURROWTOLISTFILE "$myscripts" "myshell" 14
 			elif iseq "$myscripts" "/etc/hotplug.d/iface/99-sharealiddns";then 
-				for f in `ls /etc/hotplug.d/iface/99-sharealiddns* | grep -E '99-sharealiddns'`;do
+				for f in `ls /etc/hotplug.d/iface/99-sharealiddns* 2>&1 | grep -E '99-sharealiddns'`;do
                     if [ -f "$f" ];then
                         rm -rf "$f"
                     fi
                 done
 			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then			
-				for f in `ls /etc/init.d/sharealiddns* | grep -E 'sharealiddns'`;do
+				for f in `ls /etc/init.d/sharealiddns* 2>&1 | grep -E 'sharealiddns'`;do
                     if [ -f "$f" ];then
                         rm -rf "$f"
                     fi
