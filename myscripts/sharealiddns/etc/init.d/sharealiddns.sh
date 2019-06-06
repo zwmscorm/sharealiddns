@@ -2733,13 +2733,13 @@ do_create_scripts(){
 			elif iseq "$myscripts" "/etc/hotplug.d/iface/99-sharealiddns";then 
 				for f in `ls /etc/hotplug.d/iface/99-sharealiddns* 2>&1 | grep -E '99-sharealiddns'`;do
                     if [ -f "$f" ];then
-                        rm -rf "$f"
+                        rm -f "$f"
                     fi
                 done
 			elif iseq "$myscripts" "/etc/init.d/sharealiddns";then			
 				for f in `ls /etc/init.d/sharealiddns* 2>&1 | grep -E 'sharealiddns'`;do
                     if [ -f "$f" ];then
-                        rm -rf "$f"
+                        rm -f "$f"
                     fi
                 done
 			else

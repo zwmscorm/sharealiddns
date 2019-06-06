@@ -330,12 +330,12 @@ _uninstall_(){
 	elif [ "$OS_TYPE" == "openwrt" -o "$OS_TYPE" == "pandorabox" ];then
 	    for f in `ls /etc/hotplug.d/iface/99-sharealiddns* 2>&1 | grep -E '99-sharealiddns'`;do
             if [ -f "$f" ];then
-                rm -rf "$f"
+                rm -f "$f"
             fi
         done   
 		for f in `ls /etc/init.d/sharealiddns* 2>&1 | grep -E 'sharealiddns'`;do
             if [ -f "$f" ];then
-                rm -rf "$f"
+                rm -f "$f"
             fi
         done
 	fi
