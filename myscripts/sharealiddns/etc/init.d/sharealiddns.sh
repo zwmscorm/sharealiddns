@@ -927,6 +927,7 @@ get_Record(){
 	Record_domain="";Record_Status="";Record_type="";Record_Locked="";Record_ttl="";num_getRecord=1  
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+		rm -f "$FL"
 		exit 1
 	fi
 	until [ "$num_getRecord" -gt "$jk" ];do 
@@ -970,6 +971,7 @@ get_Record(){
 			    logs "aliddns_AccessKeyId and aliddns_AccessKeySecret are correct and valid." "" "ra" "e"
 			    logs "获取阿里云域名记录失败, 检查您的域名是否通过审核," "" "ra" "e"
 			    logs "aliddns-accesskeyid和aliddns-accesskeysecret是否正确有效。" "" "ra" "e" 
+				rm -f "$FL"
 			    exit 1
 			fi
         fi
@@ -1028,6 +1030,7 @@ get_Record(){
 	done
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File"  "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+		rm -f "$FL"
 		exit 1
 	fi
     if iseq "$r" 1;then
@@ -1187,6 +1190,7 @@ aliddns_domain_api(){
 	local SE=$(aliddns_encode '/')
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+		rm -f "$FL"
 		exit 1
 	fi
 	UR="${UR}AccessKeyId=${KI}"
@@ -2061,6 +2065,7 @@ get_wan_ipv46(){
 	iseq "$aliddns_type" "AAAA" && k="-6" && xIP="ipv6_IP" && xan_ipvx_IP="wan_$xIP"
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+		rm -f "$FL"
 		exit 1
 	fi
 	#get internal Public IP
@@ -2242,6 +2247,7 @@ do_nslookup_check(){
 	nslookup_ipvx="";isdnsExist="false"
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update"
+		rm -f "$FL"
 		exit 1
 	fi
 	logs "$Count:[$aliddns_type]-[$name"."$domain]-public_dns[$nslookup_dns] Use nslookup check." "" "vl"	
@@ -2330,6 +2336,7 @@ set_scripts(){
 do_end(){
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+		rm -f "$FL"
 		exit 1
 	fi
 }
@@ -2467,6 +2474,7 @@ show_success(){
     local again_num=0;local m="";local msg="";local n=0;local i=1
 	if iseq "$isRUN" 1 || ! do_run_check;then
         do_cron "$ID_CRU" "a" "$cron_File" "month=* week=* day=* hour=* min=2" "min" "$scripts_sh" "update" 
+		rm -f "$FL"
 		exit 1
 	fi
 	logs "" "$LS"
@@ -2574,6 +2582,7 @@ do_client(){
     else
         logs "Usage of ipv4:[sh $scripts_sh $1 ipv4]" "" "rb" "w"
 		logs "Usage of ipv6:[sh $scripts_sh $1 ipv6]" "" "rb" "w"
+		rm -f "$FL"
 		exit 1
    fi
    while :;do
@@ -2583,7 +2592,7 @@ do_client(){
 		ml=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $3}')
 		sl=$(ip $jj neigh show dev $ETH | grep -v '^fe80' | grep -v '::1' | awk '{print $4}')
 		nn=$(echo "$pl" | awk 'END{print NR}')
-		[ -z "$pl" ] && logs "No client was found[没有发现客户端]" "" "yb" && exit 1
+		[ -z "$pl" ] && logs "No client was found[没有发现客户端]" "" "yb" && rm -f "$FL" && exit 1
 		until [ "$ii" -gt "$nn" ];do 
 		    p=$(echo "$pl" | awk "NR==$ii{print}")
 			m=$(echo "$ml" | awk "NR==$ii{print}")
@@ -2911,6 +2920,7 @@ get_externalIP(){
 	logs "    1、路由器或光猫设置是否正确。" "" "ra" "w"
 	logs "    2、通信运营商是否推送IPV6 IP。" "" "ra" "w"
 	logs "    3、其他未知原因导致无法探测到IPV6 IP。" "" "ra" "w"
+	rm -f "$FL"
 	exit 1
 }
 #======================================================================================
@@ -2956,7 +2966,8 @@ do_wan_state_check(){
 do_init(){
     if [ "$2" != "setconf" -a "$2" != "start" -a "$2" != "stop" -a "$2" != "restart" -a "$2" != "check" -a "$2" != "update" -a "$2" != "again" -a "$2" != "add" -a "$2" != "removeall" -a "$2" != "remove" -a "$2" != "status" -a "$2" != "monitor" -a "$2" != "checkwanip" -a "$2" != "showlog" -a "$2" != "kill" -a "$2" != "client" ];then
         logs "Usage: $1 setconf|start|stop|restart|check|update|again|add|removeall|remove|status|monitor|checkwanip|showlog|kill|client" "" "yb" "w" >&2
-       exit 1
+       rm -f "$FL"
+	   exit 1
     fi
 	local i=1;local j=30;local r=""
 	
@@ -3022,6 +3033,7 @@ do_init(){
 		logs "$SORT exists=0" "" "y" 
     else
 	    logs "You have to install sort[你必须安装sort]" "" "rb" "e" 
+		rm -f "$FL"
 		exit 1
 	fi
 	
@@ -3030,6 +3042,7 @@ do_init(){
 		logs "$NSLOOKUP exists=0" "" "y" 
 	else
 	    logs "You have to install nslookup[你必须安装nslookup]" "" "rb" "e" 
+		rm -f "$FL"
 		exit 1
 	fi
 	
@@ -3045,6 +3058,7 @@ do_init(){
 		OPENSSL="$existspath"
 	else
 	    logs "You have to install openssl[你必须安装openssl]" "" "rb" "e" 
+		rm -f "$FL"
 		exit 1
 	fi
 	
@@ -3054,6 +3068,7 @@ do_init(){
 	        logs "$OPENSSL exists=0" "" "y" 
 	    else
 			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
+			rm -f "$FL"
 			exit 1
 	    fi
 	fi
@@ -3075,6 +3090,7 @@ do_init(){
 		logs "$IP2 exists=0" "" "y" 
 	else
 		logs "You have to install ip[你必须安装ip]" "" "rb" "e" 
+		rm -f "$FL"
 		exit 1
 	fi
 	
@@ -3128,6 +3144,7 @@ do_init(){
 
 	if isEmpty "$WGET" && isEmpty "$CURL";then
 	    logs "You have to install wget or curl[你必须安装wget或curl]" "" "rb" "e" 
+		rm -f "$FL"
 		exit 1
 	fi
 	
@@ -3139,6 +3156,7 @@ do_init(){
             else
 		        logs "Low-level error: USB partition volume label must be set to English or numeric, and the total number must exceed 4 digits." "" "ra" "e"
 	            logs "低级错误：USB分区卷标必须设置为英文或数字，而且总数必须超过4位！" "" "ra" "e"	
+				rm -f "$FL"
                 exit 1		
             fi
         fi
@@ -3146,16 +3164,19 @@ do_init(){
     
 	if [ "$2" == "setconf" ];then
 	    set_aliddns_conf
+		rm -f "$FL"
         exit 1
     fi
 	
 	if iseq "$2" "showlog";then
 	    do_showlog 
+		rm -f "$FL"
 		exit 1
 	fi
 	
     if [ ! -f "$aliddns_conf" ];then
         logs "No configuration file [account.conf] can be found, exit." "" "rb" "e"
+		rm -f "$FL"
 	    exit 1
     fi
 	
@@ -3247,6 +3268,7 @@ do_begin(){
 }
 #======================================================================================
 do_begin "$ARGS0" "$ARGS1" "$ARGS2" "$ARGS3" 
+rm -f "$FL"
 exit 0
 #======================================================================================
 #======================================================================================
