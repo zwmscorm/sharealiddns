@@ -1023,8 +1023,9 @@ check_shellproc(){
 	fi
 }
 
-_dellockfile(){
-    rm -rf "$1" 
+_delfilelock(){
+    iseq "$_islockkeep" 1 && rm -rf "$1"  
+	return 0
 }
 
 _lock(){  
@@ -1033,13 +1034,24 @@ _lock(){
 
 _unlocking(){ 
     _lock u $1 
-	ulock_info $2 $3
+	_ulock_info $2 $3
 }
 
 _locking(){
-    [ -n "$4" ] && _dellockfile "$2" 
-	trap "_dellockfile $2;_unlocking $1 $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
+    _islockkeep=1 && [ -n "$4" ] && _delfilelock "$2" 
+	trap "_unlocking $1 $2 $3" EXIT HUP INT QUIT PIPE ALRM TERM 
     eval "exec $1>\"$2\""
+}
+
+fflock (){
+    _islockkeep=1 && [ -n "$4" ] && _delfilelock "$2" 
+    trap "_ulock_info $2 $3" EXIT HUP INT QUIT PIPE ALRM TERM 
+	if [ ! -f "$2" ];then
+	    eval "exec $1>\"$2\""
+		return 0
+	else
+	    return 1
+	fi
 }
 
 xnlock(){
@@ -1062,32 +1074,17 @@ ulock(){
     _lock u $1
 }
 
+_ulock_info(){
+    if iseq "$_islockkeep" 1;then 
+	    echo ""
+        logs "$2 has exited." "" "rl" "w"
+	fi
+	_delfilelock "$1" && _islockkeep=0 && exit 0
+}
+
 lock_info(){
     logs "$1 has running or locked." "" "rl" "w"
-    exit 1
-}
-
-ulock_info(){
-    if [ ! -f "$1" ];then
-	    echo ""
-	    if [ -z "$2" ];then
-            logs "The script has exited." "" "rl" "w"
-	    else
-	        logs "$2 has exited." "" "rl" "w"
-	    fi
-	fi
-	exit 1
-}
-
-fflock (){
-    [ -n "$4" ] && _dellockfile "$2" 
-    trap "_dellockfile $2;ulock_info $2 $3" SIGHUP SIGINT SIGQUIT SIGTERM
-	if [ ! -f "$2" ];then
-	    echo "$1" > "$2"
-		return 0
-	else
-	    return 1
-	fi
+	_islockkeep=0 && exit 1
 }
 
 check_url(){
@@ -1122,6 +1119,3 @@ do_Free_Memory(){
     sync 
     echo 3 > /proc/sys/vm/drop_caches
 }
-
-
-
