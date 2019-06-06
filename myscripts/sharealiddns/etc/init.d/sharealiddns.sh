@@ -318,7 +318,7 @@ isgetexternalIPV46(){
 }
 #======================================================================================
 get_aliddns_options(){
-	local ct=0;local n1=0;local n2=0;local n3=0;local n4=0;local n5=0
+	local ct=0;local n1=0;local n2=0;local n3=0;local n4=0;local n5=0;local m='"'
 	local s0="$aliddns_conf";local s1="isipv4_domain";local s2="isipv6_domain";local s3="pppoe_ifname"
 	local s4="cron_Time";local s5="cron_Time_type";local s6="islog";local s7="aliddns_AccessKeyId"
 	local s8="aliddns_AccessKeySecret";local s9="routerddns_no"
@@ -353,55 +353,7 @@ get_aliddns_options(){
     u4=$(cat $s0  | grep -w 'u4'  | RMSTRING 'u4='  | RMSTRING '"' | RMSTRING "''")
 	u6=$(cat $s0  | grep -w 'u6'  | RMSTRING 'u6='  | RMSTRING '"' | RMSTRING "''")
 	dns=$(cat $s0 | grep -w 'dns' | RMSTRING 'dns=' | RMSTRING '"' | RMSTRING "''")
-    
-	if isNotEmpty "$n1" && check_number "$n1" && iseq "$n1" "$n2" && iseq "$n1" "$n3" && iseq "$n1" "$n4" && iseq "$n1" "$n5";then
-	    aliddns_TotalCount="$n1" 	
-	else
-	    logs "The total number of aliddns_name, aliddns_domain, aliddns_ttl, aliddns_type or aliddns_lan_mac lists is different, Please check." "" "rb" "e"
-        logs "aliddns_name column number=$n1"    "" "yb"
-		logs "aliddns_domain column number=$n2"  "" "yb"
-		logs "aliddns_ttl column number=$n3"     "" "yb"
-		logs "aliddns_type column number=$n4"    "" "yb"
-		logs "aliddns_lan_mac column number=$n5" "" "yb"
-		return 1		 
-	fi
-	
-	if isNotEmpty "$routerddns_no" && check_number "$routerddns_no";then
-	    if isle "$routerddns_no" 0 || isgt "$routerddns_no" "$aliddns_TotalCount";then
-	        logs "The value of routerddns_no must be 1~$aliddns_TotalCount, Please check." "" "rb" "e"
-			return 1
-	    fi
-	else
-	    logs "The value of routerddns_no must be 1~$aliddns_TotalCount, Please check." "" "rb" "e"
-		return 1
-	fi	
-	
-	routerddns_name=$(echo "$aliddns_name_list"     | awk "{print $"$routerddns_no"}" | TRIMALL)
-	routerddns_domain=$(echo "$aliddns_domain_list" | awk "{print $"$routerddns_no"}" | TRIMALL)
-
-	if iseq "$ndebug" 1;then
-	    logs "*********************************************************************"
-		logs "islog=$islog"                                     "" "yb"
-	    logs "isipv4_domain=$isipv4_domain"                     "" "yb"
-	    logs "isipv6_domain=$isipv6_domain"                     "" "yb"
-	    logs "pppoe_ifname=$pppoe_ifname"                       "" "yb"
-		logs "cron_Time=$cron_Time"                             "" "yb"
-		logs "cron_Time_type=$cron_Time_type"                   "" "yb"
-		logs "aliddns_AccessKeyId=$aliddns_AccessKeyId"         "" "yb"
-	    logs "aliddns_AccessKeySecret=$aliddns_AccessKeySecret" "" "yb"
-	    logs "routerddns_no=$routerddns_no"                     "" "yb"
-		logs "routerddns_name=$routerddns_name"                 "" "yb"
-	    logs "routerddns_domain=$routerddns_domain"             "" "yb"
-		logs "*********************************************************************"
-	fi
-	
-	if isNotEmpty "$routerddns_domain" && isNotEmpty "routerddns_name";then
-        ct=1
-	else
-	    logs "routerddns_domain or routerddns_name has a formatted error, Please check." "" "rb" "e"
-	    return 1
-	fi	
-	
+   	
 	if iseq "$islog" 0 || iseq "$islog" 1;then 
 	    ct=1
 	else
@@ -470,7 +422,64 @@ get_aliddns_options(){
     else
 	    logs "The value of aliddns_AccessKeySecret is wrong, Please check." "" "rb" "e"
 		return 1
+	fi
+	
+	if isle "$n1" 0 || isle "$n2" 0 || isle "$n3" 0 || isle "$n4" 0 || isle "$n5" 0;then
+		logs "aliddns.conf does not set parameters, Please check."  "" "rb" "e"  
+		logs "aliddns_name=$m$aliddns_name_list$m"       "" "yb"
+		logs "aliddns_domain=$m$aliddns_domain_list$m"   "" "yb"
+		logs "aliddns_ttl=$m$aliddns_ttl_list$m"         "" "yb"
+		logs "aliddns_type=$m$aliddns_type_list$m"       "" "yb"
+		logs "aliddns_lan_mac=$m$aliddns_lan_mac_list$m" "" "yb"
+		return 1		 
+	elif isNotEmpty "$n1" && check_number "$n1" && iseq "$n1" "$n2" && iseq "$n1" "$n3" && iseq "$n1" "$n4" && iseq "$n1" "$n5" && isge "$n1" 1;then
+	    aliddns_TotalCount="$n1" 	
+	else
+	    logs "The total number of aliddns_name, aliddns_domain, aliddns_ttl, aliddns_type or aliddns_lan_mac lists is different, Please check." "" "rb" "e"
+        logs "aliddns_name column number=$n1"    "" "yb"
+		logs "aliddns_domain column number=$n2"  "" "yb"
+		logs "aliddns_ttl column number=$n3"     "" "yb"
+		logs "aliddns_type column number=$n4"    "" "yb"
+		logs "aliddns_lan_mac column number=$n5" "" "yb"
+		return 1		 
+	fi
+	
+	if isNotEmpty "$routerddns_no" && check_number "$routerddns_no";then
+	    if isle "$routerddns_no" 0 || isgt "$routerddns_no" "$aliddns_TotalCount";then
+	        logs "The value of routerddns_no must be 1~$aliddns_TotalCount, Please check." "" "rb" "e"
+			return 1
+	    fi
+	else
+	    logs "The value of routerddns_no must be 1~$aliddns_TotalCount, Please check." "" "rb" "e"
+		return 1
 	fi	
+	
+	routerddns_name=$(echo "$aliddns_name_list"     | awk "{print $"$routerddns_no"}" | TRIMALL)
+	routerddns_domain=$(echo "$aliddns_domain_list" | awk "{print $"$routerddns_no"}" | TRIMALL)
+
+	if iseq "$ndebug" 1;then
+	    logs "*********************************************************************"
+		logs "islog=$islog"                                     "" "yb"
+	    logs "isipv4_domain=$isipv4_domain"                     "" "yb"
+	    logs "isipv6_domain=$isipv6_domain"                     "" "yb"
+	    logs "pppoe_ifname=$pppoe_ifname"                       "" "yb"
+		logs "cron_Time=$cron_Time"                             "" "yb"
+		logs "cron_Time_type=$cron_Time_type"                   "" "yb"
+		logs "aliddns_AccessKeyId=$aliddns_AccessKeyId"         "" "yb"
+	    logs "aliddns_AccessKeySecret=$aliddns_AccessKeySecret" "" "yb"
+	    logs "routerddns_no=$routerddns_no"                     "" "yb"
+		logs "routerddns_name=$routerddns_name"                 "" "yb"
+	    logs "routerddns_domain=$routerddns_domain"             "" "yb"
+		logs "*********************************************************************"
+	fi
+	
+	if isNotEmpty "$routerddns_domain" && isNotEmpty "routerddns_name";then
+        ct=1
+	else
+	    logs "routerddns_domain or routerddns_name has a formatted error, Please check." "" "rb" "e"
+	    return 1
+	fi	
+	
 	return 0
 }
 #======================================================================================
