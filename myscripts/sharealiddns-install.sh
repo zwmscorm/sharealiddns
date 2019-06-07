@@ -75,7 +75,7 @@ do_install(){
 	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip http://whatismyip.akamai.com http://ipv4.myip.dk/api/info/IPv4Address"
 	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.yunohost.org"
 	
-	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';logs '<<========';exit 0" SIGHUP SIGINT SIGQUIT SIGTERM 
+	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';logs '<<========';exit 0" EXIT HUP INT QUIT PIPE ALRM TERM 
 	
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
