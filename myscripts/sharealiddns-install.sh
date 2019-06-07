@@ -75,7 +75,7 @@ do_install(){
 	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip http://whatismyip.akamai.com http://ipv4.myip.dk/api/info/IPv4Address"
 	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.yunohost.org"
 	
-	trap "rm -rf $TMP_PATH;rm -rf $TAR_GZ;echo '';logs 'Exit installation.';logs '<<========';exit 0" EXIT HUP INT QUIT PIPE ALRM TERM 
+	trap "rm -rf $TMP_PATH;rm -f $TAR_GZ;echo '';logs 'Exit installation.';logs '<<========';exit 0" HUP INT QUIT PIPE ALRM TERM 
 	
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
@@ -134,7 +134,7 @@ do_install(){
         done
         if [ "$i" -eq 1 ];then
 		    logs "No active partition was found available[找不到可用的活动分区]" 
-			rm -rf "$TAR_GZ"
+			rm -f "$TAR_GZ"
 	        rm -rf "$TMP_PATH"
 		    exit 0
 		fi
@@ -171,7 +171,7 @@ do_install(){
 	fi
 	if [ -z "$SCRIPTS_PATH" ];then
 	    logs "Installation path is not determined[安装路径没确定好]"
-	    rm -rf "$TAR_GZ"
+	    rm -f "$TAR_GZ"
 	    rm -rf "$TMP_PATH"
 	    exit 0
 	fi
@@ -208,7 +208,7 @@ do_install(){
 	fi
 	#Download and tar
 	logs "Please wait while you download it[正在下载, 请稍候]"
-	rm -rf "$TAR_GZ"
+	rm -f "$TAR_GZ"
     rm -rf "$TMP_PATH"
 	i=1;r="1"
 	while [ $i -le 10 ];do
@@ -228,7 +228,7 @@ do_install(){
 		"$TAR" -xzf "$TAR_GZ" -C "/tmp/"
 	    if [ $? -ne 0 -o ! -d "$TMP_PATH/myscripts/lib" -o ! -d "$TMP_PATH/myscripts/sharealiddns" ];then
 		    logs "Tar failed, Please reinstall[tar解压失败, 请重新安装]" 
-		    rm -rf "$TAR_GZ"
+		    rm -f "$TAR_GZ"
 		    rm -rf "$TMP_PATH"
 		    exit 0
 	    fi
@@ -251,7 +251,7 @@ do_install(){
 	cp -af "$TMP_PATH/myscripts/sharealiddns" "$SCRIPTS_PATH"
 	[ -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup" ] && mv -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf.backup" "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf"
 	
-	rm -rf "$TAR_GZ"
+	rm -f "$TAR_GZ"
 	rm -rf "$TMP_PATH"
 	
 	if [ -f "$SCRIPTS_PATH/lib/share.lib" -a -f "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" -a -f "$SCRIPTS_PATH/sharealiddns/conf/aliddns.conf" ];then
@@ -259,13 +259,14 @@ do_install(){
 		chmod +x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh"
 		logs "Successfully install to $SCRIPTS_PATH[成功安装到${SCRIPTS_PATH}]"
 		logs "<<========"
-		sleep 3
 		if [ -x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" ];then
-		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf_unlock" 2>/dev/null
+		    [ -f "/tmp/sharealiddns-install.sh" ] && cp -f "/tmp/sharealiddns-install.sh" "$SCRIPTS_PATH/sharealiddns/etc/init.d" && chmod +x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns-install.sh"
+		    sleep 3
+		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf_unlock" 
 		fi
 	else
 		logs "Installation script failed, Please check[安装脚本失败, 请检查]" 
-		rm -rf "$TAR_GZ"
+		rm -f "$TAR_GZ"
 	    rm -rf "$TMP_PATH"
 	fi
 	logs "<<========"
