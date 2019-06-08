@@ -37,7 +37,7 @@ option  ipv6  '0'
        　　　  耐心等待直至安装完成。     
        　　3、拷贝下面的安装脚本指令并粘贴到xshell或FinalShell命令行窗口中，回车：   
 ---------------------------------------------------分割线下是安装脚本指令--------------------------------------------------------  
-`cd /tmp/ && wget --no-check-certificate https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns/etc/init.d/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
+`cd /tmp/ && wget --no-check-certificate https://raw.githubusercontent.com/zwmscorm/sharealiddns/master/myscripts/sharealiddns/etc/init.d/sharealiddns-install.sh -O /tmp/sharealiddns-install.sh && sh /tmp/sharealiddns-install.sh`    
 ---------------------------------------------------分割线上是安装脚本指令--------------------------------------------------------  
 如果固件有curl, 也可以用curl下载脚本:  
 ---------------------------------------------------分割线下是安装脚本指令--------------------------------------------------------  
