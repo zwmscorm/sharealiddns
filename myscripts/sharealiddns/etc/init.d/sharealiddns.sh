@@ -2307,24 +2307,21 @@ set_cron(){
 set_scripts(){
     #remove old scripts
 	if iseq "$OS_TYPE" "merlin";then
-        [ -f '/jffs/scripts/nat-start' ] && isNotEmpty "$(cat '/jffs/scripts/nat-start' | grep -o 'myshell')" && do_create_scripts "d" "/jffs/scripts/nat-start" "$scripts_sh"
-	    [ -f '/jffs/scripts/nat-start' ] && isNotEmpty "$(cat '/jffs/scripts/nat-start' | grep -o 'myservice')" && do_create_scripts "d" "/jffs/scripts/nat-start" "$scripts_sh"
-	    [ -f '/jffs/scripts/services-start' ] && isNotEmpty "$(cat '/jffs/scripts/services-start' | grep -o 'myshell')" && do_create_scripts  "d" "/jffs/scripts/services-start" "$scripts_sh"	
-	    [ -f '/jffs/scripts/services-start' ] && isNotEmpty "$(cat '/jffs/scripts/services-start' | grep -o 'myservice')" && do_create_scripts  "d" "/jffs/scripts/services-start" "$scripts_sh"	
-	    [ -f '/jffs/scripts/ddns-start' ] && isNotEmpty "$(cat '/jffs/scripts/ddns-start' | grep -o 'isaliddns.success')" && do_create_scripts  "d" "/jffs/scripts/ddns-start" "$scripts_sh"
-        [ -f '/jffs/scripts/wan-start' ] && isEmpty "$(cat '/jffs/scripts/wan-start' | grep -o 'wan_start.pid')" && do_create_scripts  "d" "/jffs/scripts/wan-start" "$scripts_sh"	
-	
         if iseq "$1" "a";then
+		    del_tmpfile "/jffs/scripts" "wan-start" 2>/dev/null
+			del_tmpfile "/jffs/scripts" "ddns-start" 2>/dev/null
+			del_tmpfile "/jffs/scripts" "post-mount" 2>/dev/null
 		    do_create_scripts "a" "/jffs/scripts/wan-start"  "$scripts_sh"	
 		    do_create_scripts "a" "/jffs/scripts/ddns-start" "$scripts_sh"
 		    do_create_scripts "a" "/jffs/scripts/post-mount" "$scripts_sh"	
 	    elif iseq "$1" "d";then	
-		   do_create_scripts "d" "/jffs/scripts/wan-start"  "$scripts_sh"	
-	       do_create_scripts "d" "/jffs/scripts/ddns-start" "$scripts_sh"
-           do_create_scripts "d" "/jffs/scripts/post-mount" "$scripts_sh"		
+		    do_create_scripts "d" "/jffs/scripts/wan-start"  "$scripts_sh"	
+	        do_create_scripts "d" "/jffs/scripts/ddns-start" "$scripts_sh"
+            do_create_scripts "d" "/jffs/scripts/post-mount" "$scripts_sh"		
 	    fi
 	elif iseq "$OS_TYPE" "padavan";then
 	    if iseq "$1" "a";then
+		    del_tmpfile "/etc/storage" "post_wan_script.sh" 2>/dev/null
 		    do_create_scripts "a" "/etc/storage/post_wan_script.sh" "$scripts_sh"	
 		elif iseq "$1" "d";then	
 		    do_create_scripts "d" "/etc/storage/post_wan_script.sh" "$scripts_sh"	
