@@ -260,7 +260,6 @@ do_install(){
 		logs "Successfully install to $SCRIPTS_PATH[成功安装到${SCRIPTS_PATH}]"
 		logs "<<========"
 		if [ -x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" ];then
-		    [ -f "/tmp/sharealiddns-install.sh" ] && cp -f "/tmp/sharealiddns-install.sh" "$SCRIPTS_PATH/sharealiddns/etc/init.d" && chmod +x "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns-install.sh"
 		    sleep 3
 		    "$SCRIPTS_PATH/sharealiddns/etc/init.d/sharealiddns.sh" "setconf_unlock" 
 		fi
