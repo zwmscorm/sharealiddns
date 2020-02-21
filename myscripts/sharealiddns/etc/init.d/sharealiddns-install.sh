@@ -180,8 +180,7 @@ do_install(){
 	logs "Firmware compatibility is being check...[正在检测固件兼容性...]"
 	local str1="A";local str2="a"
 	if [ -n "$OPENSSL" ];then
-        r=$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64) 2>/dev/null
-	    if [ $? -eq 0 -a -n "$r" ];then
+	    if [ -n "$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64)" ];then
 	        r=""
 	    else
 			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]"
