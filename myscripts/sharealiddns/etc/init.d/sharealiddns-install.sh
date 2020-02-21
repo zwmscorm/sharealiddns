@@ -81,7 +81,7 @@ do_install(){
 	    nvram set jffs2_enable=1
 	    nvram set jffs2_scripts=1
 	    nvram commit
-        [ -d "/jffs/scripts" ] && chmod +x /jffs/scripts/*
+        [ -d "/jffs/scripts" ] && chmod +x /jffs/scripts/* 2>/dev/null
 	fi
 		
 	#check INSTALL_PATH vlue
