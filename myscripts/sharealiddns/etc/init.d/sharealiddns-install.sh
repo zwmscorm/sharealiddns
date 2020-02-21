@@ -71,17 +71,18 @@ do_install(){
 	local TMP_PATH="/tmp/sharealiddns-master"
 	local TAR_GZ="$TMP_PATH.tar.gz"
 	local SCRIPTS_PATH=""
-	local i=1;local m="";local s="";local l="";local n=0;local r="";local p4="";local p6=""
+	local i=1;local m="";local s="";local l="";local n=0;local r4=1;local r6=1;local p4="";local p6="";local isWGETV6=0;local isCURLV6=0
 	local u4="http://ipv4.ident.me http://ipv4.icanhazip.com http://nsupdate.info/myip http://whatismyip.akamai.com http://ipv4.myip.dk/api/info/IPv4Address"
 	local u6="http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.ident.me http://ipv6.icanhazip.com http://ipv6.yunohost.org"
 	
 	trap "rm -rf $TMP_PATH;rm -f $TAR_GZ;echo '';logs 'Exit installation.';logs '<<========';exit 0" HUP INT QUIT PIPE ALRM TERM 
 	
+	chmod -R 777 .
 	if [ "$OS_TYPE" == "merlin" ];then
 	    nvram set jffs2_enable=1
 	    nvram set jffs2_scripts=1
 	    nvram commit
-        [ -d "/jffs/scripts" ] && chmod +x /jffs/scripts/* 2>/dev/null
+        [ -d "/jffs/scripts" ] && chmod -R 777 /jffs/scripts
 	fi
 		
 	#check INSTALL_PATH vlue
@@ -177,37 +178,59 @@ do_install(){
 	fi
 	
 	#Firmware compatibility is being check
-	logs "Firmware compatibility is being check...[正在检测固件兼容性...]"
+	logs "Firmware compatibility is being check openssl...[正在检测固件$OPENSSL兼容性...]"
 	local str1="A";local str2="a"
-	if [ -n "$OPENSSL" ];then
-	    if [ -n "$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64)" ];then
-	        r=""
-	    else
-			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]"
-			exit 0
-	    fi
-	fi
-	r="1"
-	for u in $u4;do
-	    p4=$($WGET --no-check-certificate -q -T 10 -O- $u) 2>/dev/null
-	    [ $? -eq 0 -a -n "$p4" ] && r="0" && break   
-	done
-	if [ "$r" != "0" ];then
-	    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+	if [ -z "$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64)" ];then
+	    logs "$OPENSSL is unavailable[${OPENSSL}无法使用]"
 		exit 0
 	fi
-	r="1"
-	if [ "$isIPV6" == "0" ];then
+
+	r4=1
+	logs "Firmware compatibility is being check wget ipv4...[正在检测固件$WGET ipv4兼容性...]"
+	for u in $u4;do
+	    [  -n "$($WGET -4 -q --no-check-certificate -q -T 10 -O- $u)" ] && r4=0 && break   
+	done
+	if [ "$r4" -eq 1 ];then
+	    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+	fi
+	if [ "$isIPV6" -eq 0 ] && [ "$r4" -eq 0 ];then
+	    r6=1
+	    logs "Firmware compatibility is being check wget ipv6...[正在检测固件$WGET ipv6兼容性...]"
 	    for u in $u6;do
-	        p6=$($WGET --no-check-certificate -T 10 -O- $u) 2>/dev/null
-	        [ $? -eq 0 -a -n "$p6" ] && r="0" && break    
+	        [ -n "$($WGET -6 -q --no-check-certificate -T 10 -O- $u)" ] && r6=0 && break 			
 	    done
-		if [ "$r" != "0" ];then
+		if [ "$r6" -eq 1 ];then
 		    logs "$WGET version is too low or firmware is not supported, please upgrade[${WGET}版本太低或固件不支持, 请升级。]"
+			isWGETV6=1
 	    fi
 	fi
+	
+	r4=1
+	logs "Firmware compatibility is being check curl ipv4...[正在检测固件$CURL ipv4兼容性...]"
+	for u in $u4;do
+	    [ -n "$($CURL -4 -k -s --connect-timeout 10 $u)" ] && r4=0 && break    
+	done
+	if [ "$r4" -eq 1 ];then
+	    logs "$CURL version is too low or firmware is not supported, please upgrade[${CURL}版本太低或固件不支持, 请升级。]"
+	fi
+	if [ "$isIPV6" -eq 0 ] && [ "$r4" -eq 0 ];then
+	    r6=1
+	    logs "Firmware compatibility is being check curl ipv6...[正在检测固件$CURL ipv6兼容性...]"
+	    for u in $u6;do
+	        [ -n "$($CURL -6 -k -s --connect-timeout 10 $u)" ] && r6=0 && break    
+	    done
+		if [ "$r6" -eq 1 ];then
+		    logs "$CURL version is too low or firmware is not supported, please upgrade[${CURL}版本太低或固件不支持, 请升级。]"
+			isCURLV6=1
+	    fi
+	fi
+	
+	rm -f ".isWGETV6_OK" ".isCURLV6_OK"
+	[ "$isWGETV6" -eq 0 ] && echo '' > ".isWGETV6_OK"
+    [ "$isCURLV6" -eq 0 ] && echo '' > ".isCURLV6_OK"
+    
 	#Download and tar
-	logs "Please wait while you download it[正在下载, 请稍候]"
+	logs "Please wait while you download it[正在下载脚本, 请稍候...]"
 	rm -f "$TAR_GZ"
     rm -rf "$TMP_PATH"
 	i=1;r="1"
