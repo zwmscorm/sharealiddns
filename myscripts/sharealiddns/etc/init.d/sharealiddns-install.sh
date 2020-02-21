@@ -225,10 +225,11 @@ do_install(){
 	    fi
 	fi
 	
+	[ "$isIPV6" -eq 0 ] && [ "$isWGETV6" -eq 1 ] && [ "$isCURLV6" -eq 1 ] && exit 1
 	rm -f ".isWGETV6_OK" ".isCURLV6_OK"
 	[ "$isWGETV6" -eq 0 ] && echo '' > ".isWGETV6_OK"
     [ "$isCURLV6" -eq 0 ] && echo '' > ".isCURLV6_OK"
-    
+	
 	#Download and tar
 	logs "Please wait while you download it[正在下载脚本, 请稍候...]"
 	rm -f "$TAR_GZ"
