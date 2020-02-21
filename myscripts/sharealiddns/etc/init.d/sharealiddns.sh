@@ -3069,8 +3069,8 @@ do_init(){
 	fi
 	
 	if [ -n "$OPENSSL" ];then
-        r=$('A' | $OPENSSL dgst -sha1 -hmac 'a' -binary | $OPENSSL base64) 2>/dev/null
-	    if [ $? -eq 0 -a -n "$r" ];then
+	    local str1="A";local str2="a"
+	    if [ -n "$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64)" ];then
 	        logs "$OPENSSL exists=0" "" "y" 
 	    else
 			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
