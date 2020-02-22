@@ -79,7 +79,7 @@ aliddns_conf="$aliddns_root/conf/aliddns.conf"
 aliddns_log="$aliddns_root/log/log.txt"
 aliddns_msg="/tmp/aliddns_msg.txt"
 #======================================================================================
-cd $scripts_path && chmod 0755 .
+chmod -R 0755 $scripts_path >/dev/null 2>&1
 #======================================================================================
 share_path="$scripts_mount_path/lib/share.lib"
 if [ -f "$share_path" ];then
