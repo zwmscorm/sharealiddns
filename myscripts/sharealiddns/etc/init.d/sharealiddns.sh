@@ -228,7 +228,7 @@ isIPV6=0
 isRUN=0
 #======================================================================================
 get_url_cmd(){
-    local u="$1";local t="$2";local m="$3";local p=""
+    local u="$1";local t="$2";local m="$3";local g="$4";local p=""
 	if iseq "$m" "ipv4";then
 	    m=-4
 	elif iseq "$m" "ipv6";then
@@ -237,12 +237,18 @@ get_url_cmd(){
 	    m=""
 	fi
 	isEmpty "$t" && t=30
-	if [ -n "$u" ];then
-	    if [ -n "$WGET" ];then
-	        p=$($WGET $m --no-check-certificate -q -T $t -O- $u) 2>/dev/null
-        elif [ -n "$CURL" ];then
-	        p=$($CURL $m -k -s --connect-timeout $t $u) 2>/dev/null
-        fi
+	if [ -z "$g" ];then
+	    if [ -n "$u" ];then
+	        if [ -n "$WGET" ];then
+	            p=$($WGET $m --no-check-certificate -q -T $t -O- $u) 2>/dev/null
+            elif [ -n "$CURL" ];then
+	            p=$($CURL $m -k -s --connect-timeout $t $u) 2>/dev/null
+            fi
+	    fi
+	elif [ "$g" == "wget" ];then
+	    p=$($WGET $m --no-check-certificate -T $t -O- $u) 2>/dev/null
+	elif [ "$g" == "curl" ];then
+	    p=$($CURL $m -k --connect-timeout $t $u) 2>/dev/null
 	fi
 	echo "$p"
 }
@@ -2811,14 +2817,22 @@ do_pppoe(){
 }
 #======================================================================================
 get_externalIP(){
-    local r=1;local i=1;local j=3;local wp="";local pl=""
+    local r=1;local i=1;local j=3;local wp="";local pl="";local n=1;local g=""
 	externalIP4="";externalIP6="";wanstartPID=0;dhcp6cPID=0
 	#get external IP4
 	if iseq "$isipv4_domain" 1;then
 	    logs "Detecting external IPV4 IP[正在探测外网IPV4 IP]" "" "yb" "t"
-	    wp="";r=1;i=1;j=$(echo "$u4" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')	
+	    wp="";r=1;i=1;n=1;j=$(echo "$u4" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')	
 	    for u in $u4;do
-	        wp=$(get_url_cmd $u 3) >/dev/null 2>&1		
+		    n=$(sadd $n 1)	
+			if iseq $(($n % 2)) 1;then 
+                g="wget"
+				logs "Try to get external IPv4 IP with $g..." "" "vl" "t"
+            else
+                g="curl"
+				logs "Try to get external IPv4 IP with $g..." "" "vl" "t"
+            fi
+	        wp=$(get_url_cmd $u 3 ipv4 $g) 		
 	        wanstartPID=$(get_wan_startPID)	
 		    if isNotEmpty "$wp" && public_ipv4_check "$wp" && isgt "$wanstartPID" 0;then
 		        logs "RIGHT=>$i/$j:externalIP4[${wp}]-wanstartPID[${wanstartPID}]-[$u]" "" "yl" "t"
@@ -2873,12 +2887,19 @@ get_externalIP(){
 	    dhcp6cPID=$(get_dhcp6cPID)	
 		return 0
 	fi
-	
 	#get external IP6
 	logs "Detecting external IPV6 IP[正在探测外网IPV6 IP]" "" "yb" "t"	
-	wp="";r=1;i=1;j=$(echo "$u6" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')
+	wp="";r=1;i=1;n=1;j=$(echo "$u6" | ROWTOCOLUMN | RMSURPLUSSPACE | awk 'END{print NR}')
     for u in $u6;do
-	        wp=$(get_url_cmd $u 3) >/dev/null 2>&1
+	        n=$(sadd $n 1)	
+			if iseq $(($n % 2)) 1;then 
+                g="wget"
+				logs "Try to get external IPv6 IP with $g..." "" "vl" "t"
+            else
+                g="curl"
+				logs "Try to get external IPv6 IP with $g..." "" "vl" "t"
+            fi
+	        wp=$(get_url_cmd $u 3 ipv6 $g) 
             dhcp6cPID=$(get_dhcp6cPID)	
 		if isNotEmpty "$wp" && public_ipv6_check "$wp" && isgt "$dhcp6cPID" 0;then
 		    logs "RIGHT=>$i/$j:externalIP6[${wp}]-dhcp6cPID[${dhcp6cPID}]-[$u]" "" "yl" "t"
@@ -3068,17 +3089,15 @@ do_init(){
 		exit 1
 	fi
 	
-	if [ -n "$OPENSSL" ];then
-	    local str1="A";local str2="a"
-	    if [ -n "$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64)" ];then
-	        logs "$OPENSSL exists=0" "" "y" 
-	    else
-			logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
-			rm -f "$FL"
-			exit 1
-	    fi
+	local str1="A";local str2="a"
+	if [ -n "$(echo $str1 | $OPENSSL dgst -sha1 -hmac $str2 -binary | $OPENSSL base64)" ];then
+	    logs "$OPENSSL exists=0" "" "y" 
+	else
+	    logs "$OPENSSL is unavailable[${OPENSSL}无法使用]" "" "rb" "e" 
+	    rm -f "$FL"
+		exit 1
 	fi
-	
+
 	if isexists "/usr/bin/ip";then
 	    IP2="$existspath"
 		logs "$IP2 exists=0" "" "y" 
